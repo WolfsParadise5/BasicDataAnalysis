@@ -1,15 +1,16 @@
 #include <iostream>
 using namespace std;
 
+
+
+int main() {
+
 int minCalc(int);
 int maxCalc(int);
 int medianCalc(int);
 int meanCalc(int);
 int varianceCalc(int);
 int standardDeviationCalc(int);
-
-int main() {
-
 
 }
 
@@ -49,6 +50,8 @@ int maxCalc(int valarr[100]) {
 
 int medianCalc(int valarr[100]) {
 
+    int n = sizeoff(valarr)/sizeoff(valarr[0]);
+    sort(vallarr, valarr+n);
     result = valarr[49];  //Between 0-99
     return result;
 
