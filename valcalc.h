@@ -67,8 +67,8 @@ int meanCalc(int valarr[100]) {
         total += valarr[i];
     }
 
-    total = num / 100;
-    return num, result;
+    result = total / 100;
+    return total, result;
 
 }
 
