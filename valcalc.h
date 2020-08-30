@@ -46,34 +46,33 @@ int maxCalc(vector<int>& number) {
 }
 
 int meanCalc(vector<int>& number)  {
-    int total = accumulate(number.begin(), number.end(),0);
-    int val = total / 100;
+    double total = accumulate(number.begin(), number.end(),0);
+    double val = total / 100;
     return total, val; 
 }
 
 int medianCalc(vector<int>& number) {
 
-    size_t vecsize = number.size();
     sort(number.begin(), number.end());
-    return (number[vecsize / 2 - 1] + number[size / 2]) / 2;
+    return (number[100 / 2 - 1] + number[100 / 2]) / 2;
 
 }
 
 int varianceCalc(vector<int>& number) {
 
-    int total = accumulate(number.begin(), number.end(),0);
-    int mean = total / 100;
-    int variance = (total - mean) ** 2 / 100;
+    double total = accumulate(number.begin(), number.end(),0);
+    double mean = total / 100;
+    double variance = (total - mean) ** 2 / 100;
     return variance;
 
 }
 
 int standardDeviationCalc(vector<int>& number) {
 
-    int total = accumulate(number.begin(), number.end(),0);
-    int mean = total / 100;
-    int variance = (total - mean) ** 2 / 100;
-    int standardDeviation = variance ** 0.5;
+    double total = accumulate(number.begin(), number.end(),0);
+    double mean = total / 100;
+    double variance = (total - mean) ** 2 / 100;
+    double standardDeviation = variance ** 0.5;
     return standardDeviation;
 
 }
