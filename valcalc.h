@@ -4,9 +4,9 @@ using namespace std;
 int minCalc(int);
 int maxCalc(int);
 int medianCalc(int);
-int meanCalc(int);
-int varianceCalc(int);
-int standardDeviationCalc(int);
+int meanCalc(double);
+int varianceCalc(double);
+int standardDeviationCalc(double);
 
 int main() {
 
@@ -51,14 +51,14 @@ int meanCalc(vector<int>& number)  {
     return total, val; 
 }
 
-int medianCalc(vector<int>& number) {
+double medianCalc(vector<int>& number) {
 
     sort(number.begin(), number.end());
     return (number[100 / 2 - 1] + number[100 / 2]) / 2;
 
 }
 
-int varianceCalc(vector<int>& number) {
+double varianceCalc(vector<int>& number) {
 
     double total = accumulate(number.begin(), number.end(),0);
     double mean = total / 100;
@@ -67,7 +67,7 @@ int varianceCalc(vector<int>& number) {
 
 }
 
-int standardDeviationCalc(vector<int>& number) {
+double standardDeviationCalc(vector<int>& number) {
 
     double total = accumulate(number.begin(), number.end(),0);
     double mean = total / 100;
