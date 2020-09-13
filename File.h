@@ -1,35 +1,10 @@
-/*
-    NOTE:
-    HOW TO USE File CLASS
-    - INCLUDE File.h first, #include "File.h"
-    - USE loadFileCsv() to load file into array e.g. loadFileCsv("data.csv")
-    - USE isFileOpen() to check if the file is open successfully
-
-    e.g USING LOOP TO ENTER FILENAME IF FILE IS NOT OPEN
-    //////////////////////////////////////
-    File data; //create object
-    string filename;
-    cin.ignore();
-    do
-    {
-        cout << "Please enter your file name.\n->";
-
-        getline(cin, filename);
-        data.loadFileCsv(filename);
-
-    }while(data.isFileOpen() == false);
-    //////////////////////////////////////
-    - USE getHeader() to get header names
-    - USE getData() for string type of data, getDataInt() for int type of data
-    - USE printData() simply print all data
-    - check return types function for more////
-*/
 #include <iostream>
-#include <algorithm> //to use remove function
+#include <algorithm> //to use remove
+#include <limits> //to numeric_limits function
 #include <sstream> //use string stream to separate comma
-#include <string>
 #include <fstream>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
@@ -39,49 +14,49 @@ class File
     public:
         File();
         ~File();
-        void loadFileCsv(string filename);//open file
+        void loadFileCsv(const string &filename);//open file
         void loadData(ifstream &filename);//assign each data to variable
         bool checkFormat(ifstream &file);//check header of the csv file
-        bool isNumber(string line);
+        bool isNumber(string line);//check if the string contains only number
+        int checkColumn(string line);//check num of columns
         void printData();
+        void display2dTable(const vector<vector<int>> &data, const vector<string> &headers, const int &width);
         void convertData(vector<vector<string> > &data, int column);
-        int checkColumn(string line);
         //return types
-        bool isFileOpen(){return open;}
-        bool isFileLoad(){return load;}
+        bool isFileOpen(){return file.is_open();}
         string getFilename(){return filename;}
         vector<string> getHeader(){return name;}
         vector<vector<string> > getData(){return data;}
         vector<vector<int> > getDataInt(){return dataInt;}
+        bool getFormat(){return format;}
         int getColumn(){return column;}
         int getRow(){return row;}
+        vector<int> get1dData(const vector<vector<int> > &data, const int &choice);
     private:
         string filename;//point to filename variable
+        bool format; //store the result of format checking
         ifstream file; //to load the csv file
         int column, row; //read the value of column and row from the csv file
         vector<string> name; // store header names
         vector<vector<string> > data;//2d array to store all the data
         vector<vector<int> > dataInt;//convert data to int for calculation
-        bool open, load;
 };
 
 //code
 File::File()
 {
-    open = load = false;
+    format = true;//assume format is correct first
 }
 File::~File()
 {
     file.close();
 }
-void File::loadFileCsv(string filename)
+void File::loadFileCsv(const string &filename)
 {
-
     file.open(filename.c_str()); //convert filename
     if(!file.is_open())
     {
         cout << "File is not open, please check your file name again." << endl;
-        open = false;
     }else
     {
         File::filename = filename;//store file name
@@ -90,7 +65,6 @@ void File::loadFileCsv(string filename)
             loadData(file);
             convertData(data, column);
             //printData();
-            open = true;
         }else
             cout << "Format Error, please check your file" << endl;
     }
@@ -98,9 +72,7 @@ void File::loadFileCsv(string filename)
 bool File::checkFormat(ifstream &file)
 {
     string line;//to store the a line of string from file temporally
-    bool format = true;//assume format is correct first
     getline(file, line);//get first line
-    line.erase(remove(line.begin(), line.end(), ' '), line.end());//remove spaces
     if(!isNumber(line))//check if the string contain only integer
     {
         format = false;
@@ -110,10 +82,8 @@ bool File::checkFormat(ifstream &file)
     {
         column = atoi(line.c_str());//convert string to int, store into int column
         getline(file, line);//get second line
-        int countColumn;//use to store number of columns for checking
 
-        countColumn = checkColumn(line);//get number of columns store into countColumn
-        if(countColumn != column)//check if the number of titles is not match to column
+        if(checkColumn(line) != column)//check if the number of titles is not match to column
         {
             format = false;
             cout << "ERROR: Column does not match to the number of titles" << endl;
@@ -121,7 +91,6 @@ bool File::checkFormat(ifstream &file)
         else
         {
             getline(file, line);//get the third line
-            line.erase(remove(line.begin(), line.end(), ' '), line.end());//remove spaces
             if(!isNumber(line))
             {
                 format = false;
@@ -130,18 +99,17 @@ bool File::checkFormat(ifstream &file)
             else
             {
                 row = atoi(line.c_str());//convert string to int, store into int row
-                int countRow = 0;//to get the current row
+                int countRow = 1;//to get the current row
                 while(getline(file, line))//check the rest of the row
                 {
-                    countColumn = checkColumn(line);
-                    if(countColumn != (column))//perform check column for each row
+                    if(checkColumn(line)!= (column))//perform check column for each row
                     {
                         format = false;
-                        cout << "ERROR: Data Column does not match to the number of titles at line: " << countRow + 4 /*Skip 3 rows + 1*/ << endl;
+                        cout << "ERROR: Data Column does not match to the number of titles at line " << countRow + 3 << endl;//add 3 rows because of headers
                     }
                     countRow++;
                 }
-                if(countRow != row)//check number of rows match to header setting
+                if(countRow - 1 != row)//check number of rows match to header setting
                 {
                     format = false;
                     cout << "ERROR: Row does not match to the total number of data" << endl;
@@ -156,41 +124,38 @@ void File::loadData(ifstream &file)
 {
     file.clear();//remove error flag
     file.seekg(0, file.beg);//point back to first line
-    string line; //to store the string from csv temporally
-    getline(file, line);//skip the first line string
-    for(int i = 0; i < column; i++)
+    string line; //to store the string from file temporally
+    file.ignore(numeric_limits<streamsize>::max(), '\n');//skip a line
+
+    getline(file, line); //read line 3, header names
+    stringstream ss(line);//use to separate comma
+    for(int i = 0; i < column; ++i)
     {
-        if(i == column - 1){//to detect the last word of the line to prevent get next line of the string
-            getline(file, line);
-            line.erase(remove(line.begin(), line.end(), ' '), line.end()); //remove spaces after last characters
-            name.push_back(line);
-        }else{
-            getline(file, line, ',');
-            name.push_back(line);
-        }
+        getline(ss, line, ',');
+        line.erase(remove(line.begin(), line.end(), ' '), line.end());
+        name.push_back(line);
     }
-    getline(file, line);//skip line 3
+    file.ignore(numeric_limits<streamsize>::max(), '\n');//skip a line
     while(getline(file, line))
     {
-        stringstream ss(line);//use to separate each string till comma
+        stringstream ss(line);
         vector<string> temp;//to store one row of data temporally
-        for(int i = 0; i < name.size(); i++)
+        for(int i = 0; i < name.size(); ++i)
         {
             getline(ss, line, ',');
-            line.erase(remove(line.begin(), line.end(), ' '), line.end());//remove spaces
+            line.erase(remove(line.begin(), line.end(), ' '), line.end());
             temp.push_back(line);
         }
         data.push_back(temp);//put it back to 2d vector
     }
-    system("CLS");
+    system("cls||clear");
     cout << "File loaded." << endl;
-    load = true;//file loaded successfully
 }
 
 int File::checkColumn(string line)
 {
     int count = 0;
-    for(int i = 0; i < line.length(); i++)//count how many comma on line 3
+    for(int i = 0; i < line.length(); ++i)//count how many comma on line 3
     {
         if(line[i] == ',')
             count++;
@@ -201,7 +166,8 @@ int File::checkColumn(string line)
 bool File::isNumber(string line)
 {
     bool number = true;
-    for(int i = 0; i < line.length(); i++)
+    line.erase(remove(line.begin(), line.end(), ' '), line.end());//remove spaces
+    for(int i = 0; i < line.length(); ++i)
     {
         if(isdigit(line[i]) == false)//detect each character
             number = false;
@@ -209,32 +175,69 @@ bool File::isNumber(string line)
     return number;
 }
 
-void File::convertData(vector<vector<string> > &data, int column)
+void File::convertData(vector<vector<string> >&data, int column)
 {
-    for(int i = 0; i < data.size(); i++)
+    vector<vector<string> > tempData = data;
+    for(int i = 0; i < data.size(); ++i)
     {
         vector<int>temp;//store a row of vector temporally
-        for(int j = 0; j < column; j++)
+        for(int j = 0; j < column; ++j)
         {
-            temp.push_back(atoi(data[i][j].c_str()));//convert string to int and add to temp vector
+            temp.push_back(atoi(tempData[i][j].c_str()));//convert string to int and add to temp vector
         }
         dataInt.push_back(temp);
     }
 }
-
 void File::printData()
 {
     cout << "File name: " << filename << endl;
     cout << "Column: " << column << endl;
     cout << "Row: " << row<< endl;
+//
+//    for(int dataRow = 0; dataRow < dataInt.size(); ++dataRow)
+//    {
+//        cout << dataRow + 1 << ".)";
+//
+//        for(int dataColumn = 0; dataColumn < name.size(); ++dataColumn)
+//            cout << name[dataColumn] << ": " << dataInt[dataRow][dataColumn]<< " ";
+//
+//        cout << endl;
+//    }
+    display2dTable(dataInt, name, 9);
+}
+vector<int> File::get1dData(const vector<vector<int> > &data, const int &choice)
+{
+    vector<int> vec;
 
-    for(int dataRow = 0; dataRow < dataInt.size(); dataRow++)
+    for(int i = 0; i < data.size(); ++i)
     {
-        cout << dataRow + 1 << ".)";
+        vec.push_back(data[i][choice]);
+    }
 
-        for(int dataColumn = 0; dataColumn < name.size(); dataColumn++)
-            cout << name[dataColumn] << ": " << dataInt[dataRow][dataColumn]<< " ";
+    return vec;
+}
+void File::display2dTable(const vector<vector<int> > &data, const vector<string> &headers, const int &width)
+{
+    int numFields = headers.size();
+    string seperator = " |";
+    int totalWidth = (width * numFields) + seperator.size() * numFields;
+    string line = seperator + string(totalWidth - 1, '-') + "|";
 
+    //print table headers
+    cout << line << endl;
+    cout << seperator;
+    for(int i = 0; i < headers.size(); ++i)
+        cout << setw(width) << headers[i] << seperator;
+    cout << endl << line << endl;
+
+    //print table body
+    for(int i = 0; i < data.size(); ++i)
+    {
+        cout << seperator;
+        for(int j = 0; j < headers.size(); ++j)
+            cout << setw(width) << data[i][j] << seperator;
         cout << endl;
     }
+
+    cout << line << endl;
 }
