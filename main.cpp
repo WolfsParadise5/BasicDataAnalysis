@@ -1,8 +1,9 @@
 #include "File.h"
 #include "Linear.h"
+#include "Correlation.h"
 
 //global
-File *dataPtr = nullptr;//to store latest file data
+File *dataPtr = nullptr;//point to latest file data
 
 //function prototypes
 //menu and get input
@@ -11,13 +12,17 @@ void mainMenu();
 int getChoice(const int &max);
 //main menu
 void loadFile();
-void calculation();
+void computeStats();
 void report();
 //compute stats
 void select2Col(const vector<string> &headers);
+void selectLinearCorrel(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2);
 
 int main()
 {
+    cout << fixed << showpoint;
+    cout << setprecision(4); //4 decimal places
+
     mainMenu();
     delete dataPtr;
     return 0;
@@ -29,7 +34,7 @@ void title(const string &title)
     string line = "|" + string(title.size() + width*2 - 2, '-') + "|";
 
     cout << line << endl;
-    cout << setw(width) << left << "| " << title << right << setw(width) << " |" << endl;
+    cout << left << setw(width) << "| " << title << right << setw(width) << " |" << endl;
     cout << line << endl;
 }
 
@@ -45,8 +50,12 @@ int getChoice(const int &max)
     {
         cout << "From the list above, enter the number(" << min << " - " << max << " and 999): ";
         cin >> choice;
-    }while(choice != 999 && (choice < min || choice > max) && printf("ERROR Message: You have entered an invalid number. Please try again.\n"));
-
+        if(!cin){
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');//prevent infinite loop
+            choice = max + 1;//give choice a false value to trigger error message
+        }
+    }while(!cin || choice != 999 && (choice < min || choice > max) && printf("\nERROR Message: You have entered an invalid number. Please try again.\n"));
     if(choice == 0){
         exit(0);
         delete dataPtr;
@@ -74,7 +83,7 @@ void mainMenu()
             report();
             break;
         case 3:
-            calculation();
+            computeStats();
             break;
     }
 }
@@ -99,13 +108,21 @@ void loadFile()
             data.loadFileCsv(filename);
 
     }while(data.isFileOpen() == false);
-    if(data.getFormat()) dataPtr = &data;//if format is correct, point to the latest data
+
+    if(data.getFormat())
+    {
+        if(dataPtr != nullptr){ //if theres data inside pointer
+        delete dataPtr; //delete pointer to prevent memory leak
+        dataPtr = nullptr;
+        }
+        dataPtr = &data;//if format is correct, point to the latest data
+    }
 
     system("pause");
     mainMenu();
 }
 
-void calculation()
+void computeStats()
 {
     system("cls||clear");
 
@@ -122,7 +139,7 @@ void calculation()
         cout << "7.)Histogram" << endl;
         cout << "8.)Tables Between Mean" << endl;
         cout << "9.)Frequency Tables" << endl;
-        cout << "10.)Select 2 Columns" << endl;
+        cout << "10.)Select 2 Columns\n( Pearson Correlation/ Linear Regression Line )" << endl;
 
         int choice = getChoice(10);
 
@@ -163,16 +180,53 @@ void select2Col(const vector<string> &headers)
 
     for(int i = 1; i < headers.size(); ++i)
         cout << i << ".)" << headers[i] << endl;
+    cout << headers.size() << ".)Back to Compute Stats" << endl;
 
-    int choice1 = getChoice(headers.size() - 1);
-    int choice2 = getChoice(headers.size() - 1);
-    vector<int> column1 = dataPtr->get1dData(dataPtr->getDataInt(), choice1);
-    vector<int> column2 = dataPtr->get1dData(dataPtr->getDataInt(), choice2);
+    cout << "Enter First Column: " << endl;
+    int choice1 = getChoice(headers.size());
+    if(choice1 != headers.size())
+    {
+        cout << "Enter Second Column: " << endl;
+        int choice2 = getChoice(headers.size());
+        if(choice2 != headers.size())
+        {
+            vector<int> column1 = dataPtr->get1dData(dataPtr->getDataInt(), choice1);
+            vector<int> column2 = dataPtr->get1dData(dataPtr->getDataInt(), choice2);
 
-    linearRegression(column1, column2, headers[choice1], headers[choice2]);
+            selectLinearCorrel(column1, column2, headers[choice1], headers[choice2]);
 
-    system("pause");
-    select2Col(headers);
+            system("pause");
+            select2Col(headers);
+        }
+    }
+    computeStats();
+}
+
+void selectLinearCorrel(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2)
+{
+    system("cls||clear");
+    title("Choose Linear Regression Line or Pearson Correlation");
+    cout << "Columns you chose: " << endl;
+    cout << "Column 1: " << subject1 << endl;
+    cout << "Column 2: " << subject2 << endl;
+    cout << "1.)Linear Regression Line" << endl;
+    cout << "2.)Pearson Correlation" << endl;
+    cout << "3.)Back to Select 2 Columns" << endl;
+
+    int choice = getChoice(3);
+
+    switch(choice)
+    {
+        case 1:
+            linearRegression(column1, column2, subject1, subject2);
+            break;
+        case 2:
+            correlation(column1, column2, subject1, subject2);
+            break;
+        case 3:
+            select2Col(dataPtr->getHeader());
+            break;
+    }
 }
 
 void report()
