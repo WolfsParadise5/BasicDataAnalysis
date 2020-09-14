@@ -220,12 +220,13 @@ void File::display2dTable(const vector<vector<int> > &data, const vector<string>
 {
     int numFields = headers.size();
     string seperator = " |";
-    int totalWidth = (width * numFields) + seperator.size() * numFields;
+    int totalWidth = (width * numFields) + seperator.size() * (numFields + 1) + 5;
     string line = seperator + string(totalWidth - 1, '-') + "|";
 
     //print table headers
     cout << line << endl;
     cout << seperator;
+    cout << setw(5) << "No." << seperator;
     for(int i = 0; i < headers.size(); ++i)
         cout << setw(width) << headers[i] << seperator;
     cout << endl << line << endl;
@@ -234,6 +235,7 @@ void File::display2dTable(const vector<vector<int> > &data, const vector<string>
     for(int i = 0; i < data.size(); ++i)
     {
         cout << seperator;
+        cout << setw(5) << i + 1 << seperator;
         for(int j = 0; j < headers.size(); ++j)
             cout << setw(width) << data[i][j] << seperator;
         cout << endl;
