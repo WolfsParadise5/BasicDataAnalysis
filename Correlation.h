@@ -5,8 +5,8 @@
 
 using namespace std;
 
-void correlation(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2);
-void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2, const int &width);
+void correlation(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);
+void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width);
 double sumCorrel(const vector<int> &column1, const vector<int> &column2);
 
 double mean(const vector<int> column)
@@ -18,18 +18,16 @@ double mean(const vector<int> column)
     return total / column.size();
 }
 
-void correlation(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2)
+void correlation(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2)
 {
-    system("cls||clear");
-
-    cout << "Column 1: " << subject1 << endl;
-    cout << "Column 2: " << subject2 << endl;
+    cout << " Column 1: " << subject1 << endl;
+    cout << " Column 2: " << subject2 << endl;
 
     displayCorrelTable(column1, column2, subject1, subject2, 11);
 
-    cout << "mean_x = " << mean(column1) << ", mean_y = " << mean(column2) << endl;
-    cout << "Correlation Computation = sum(a * b) / sqrt(sum(a * a) * sum(b * b))" << endl;
-    cout << "Correlation Computation = " << sumCorrel(column1, column2) << " / sqrt("
+    cout << " mean_x = " << mean(column1) << ", mean_y = " << mean(column2) << endl;
+    cout << " Correlation Computation = sum(a * b) / sqrt(sum(a * a) * sum(b * b))" << endl;
+    cout << " Correlation Computation = " << sumCorrel(column1, column2) << " / sqrt("
         << sumCorrel(column1, column1) << " * " << sumCorrel(column2, column2) << ")" << endl;
 
     double correl = sumCorrel(column1, column2) / sqrt(sumCorrel(column1, column1) * sumCorrel(column2, column2));
@@ -37,7 +35,7 @@ void correlation(const vector<int> &column1, const vector<int> &column2, const s
     cout << "Correlation Computation = " << correl << endl;
 }
 
-void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, const string &subject1, const string &subject2, const int &width)
+void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width)
 {
     int numFields = 7;
     string seperator = " |";
@@ -57,8 +55,8 @@ void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, 
         << setw(width) << "b * b" << seperator << endl;
     cout << line << endl;
     //values
-    double totalA, totalB, n;
-    totalA = totalB = n = 0;
+//    double totalA, totalB, n;
+//    totalA = totalB = n = 0;
     for(int i = 0; i < column1.size(); ++i)
     {
         double a = column1[i] - mean1;
@@ -70,15 +68,15 @@ void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, 
             << setw(width) << a * b << seperator
             << setw(width) << a * a << seperator
             << setw(width) << b * b << seperator << endl;
-        totalA += a * a;
-        totalB += b * b;
-        n += a * b;
+//        totalA += a * a;
+//        totalB += b * b;
+//        n += a * b;
     }
     cout << line << endl;
     cout << seperator << setw(width*4 + seperator.size()*4) << result//jump to column 4
-        << setw(width) << n << seperator
-        << setw(width) << totalA << seperator
-        << setw(width) << totalB << seperator << endl;
+        << setw(width) << sumCorrel(column1, column2) << seperator
+        << setw(width) << sumCorrel(column1, column1) << seperator
+        << setw(width) << sumCorrel(column2, column2) << seperator << endl;
     cout << line << endl;
 }
 double sumCorrel(const vector<int> &column1, const vector<int> &column2)

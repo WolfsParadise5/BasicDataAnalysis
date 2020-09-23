@@ -14,14 +14,14 @@ class File
     public:
         File();
         ~File();
-        void loadFileCsv(const string &filename);//open file
+        void loadFileCsv(string filename);//open file
         void loadData(ifstream &filename);//assign each data to variable
         bool checkFormat(ifstream &file);//check header of the csv file
         bool isNumber(string line);//check if the string contains only number
         int checkColumn(string line);//check num of columns
         void printData();
-        void display2dTable(const vector<vector<int>> &data, const vector<string> &headers, const int &width);
-        void convertData(vector<vector<string> > &data, int column);
+        void display2dTable(const vector<vector<int>> &data, const vector<string> &headers, int width);
+        void convertData(const vector<vector<string> > &data, int column);
         //return types
         bool isFileOpen(){return file.is_open();}
         string getFilename(){return filename;}
@@ -31,7 +31,7 @@ class File
         bool getFormat(){return format;}
         int getColumn(){return column;}
         int getRow(){return row;}
-        vector<int> get1dData(const vector<vector<int> > &data, const int &choice);
+        vector<int> get1dData(const vector<vector<int> > &data, int choice);
     private:
         string filename;//point to filename variable
         bool format; //store the result of format checking
@@ -51,12 +51,12 @@ File::~File()
 {
     file.close();
 }
-void File::loadFileCsv(const string &filename)
+void File::loadFileCsv(string filename)
 {
     file.open(filename.c_str()); //convert filename
     if(!file.is_open())
     {
-        cout << "File is not open, please check your file name again." << endl;
+        cout << " File is not open, please check your file name again." << endl;
     }else
     {
         File::filename = filename;//store file name
@@ -66,7 +66,7 @@ void File::loadFileCsv(const string &filename)
             convertData(data, column);
             //printData();
         }else
-            cout << "Format Error, please check your file" << endl;
+            cout << " Format Error, please check your file" << endl;
     }
 }
 bool File::checkFormat(ifstream &file)
@@ -76,7 +76,7 @@ bool File::checkFormat(ifstream &file)
     if(!isNumber(line))//check if the string contain only integer
     {
         format = false;
-        cout << "ERROR: Undefined column value" << endl;
+        cout << " ERROR: Undefined column value" << endl;
     }
     else
     {
@@ -86,7 +86,7 @@ bool File::checkFormat(ifstream &file)
         if(checkColumn(line) != column)//check if the number of titles is not match to column
         {
             format = false;
-            cout << "ERROR: Column does not match to the number of titles" << endl;
+            cout << " ERROR: Column does not match to the number of titles" << endl;
         }
         else
         {
@@ -94,7 +94,7 @@ bool File::checkFormat(ifstream &file)
             if(!isNumber(line))
             {
                 format = false;
-                cout << "ERROR: Undefined row value" << endl;
+                cout << " ERROR: Undefined row value" << endl;
             }
             else
             {
@@ -105,14 +105,14 @@ bool File::checkFormat(ifstream &file)
                     if(checkColumn(line)!= (column))//perform check column for each row
                     {
                         format = false;
-                        cout << "ERROR: Data Column does not match to the number of titles at line " << countRow + 3 << endl;//add 3 rows because of headers
+                        cout << " ERROR: Data Column does not match to the number of titles at line " << countRow + 3 << endl;//add 3 rows because of headers
                     }
                     countRow++;
                 }
                 if(countRow - 1 != row)//check number of rows match to header setting
                 {
                     format = false;
-                    cout << "ERROR: Row does not match to the total number of data" << endl;
+                    cout << " ERROR: Row does not match to the total number of data" << endl;
                 }
             }
         }
@@ -149,7 +149,7 @@ void File::loadData(ifstream &file)
         data.push_back(temp);//put it back to 2d vector
     }
     system("cls||clear");
-    cout << "File loaded." << endl;
+    cout << " File loaded." << endl;
 }
 
 int File::checkColumn(string line)
@@ -170,12 +170,15 @@ bool File::isNumber(string line)
     for(int i = 0; i < line.length(); ++i)
     {
         if(isdigit(line[i]) == false)//detect each character
+        {
             number = false;
+            break;
+        }
     }
     return number;
 }
 
-void File::convertData(vector<vector<string> >&data, int column)
+void File::convertData(const vector<vector<string> >&data, int column)
 {
     vector<vector<string> > tempData = data;
     for(int i = 0; i < data.size(); ++i)
@@ -190,9 +193,9 @@ void File::convertData(vector<vector<string> >&data, int column)
 }
 void File::printData()
 {
-    cout << "File name: " << filename << endl;
-    cout << "Column: " << column << endl;
-    cout << "Row: " << row<< endl;
+    cout << " File name: " << filename << endl;
+    cout << " Column: " << column << endl;
+    cout << " Row: " << row<< endl;
 //
 //    for(int dataRow = 0; dataRow < dataInt.size(); ++dataRow)
 //    {
@@ -205,7 +208,7 @@ void File::printData()
 //    }
     display2dTable(dataInt, name, 9);
 }
-vector<int> File::get1dData(const vector<vector<int> > &data, const int &choice)
+vector<int> File::get1dData(const vector<vector<int> > &data, int choice)
 {
     vector<int> vec;
 
@@ -216,7 +219,7 @@ vector<int> File::get1dData(const vector<vector<int> > &data, const int &choice)
 
     return vec;
 }
-void File::display2dTable(const vector<vector<int> > &data, const vector<string> &headers, const int &width)
+void File::display2dTable(const vector<vector<int> > &data, const vector<string> &headers, int width)
 {
     int numFields = headers.size();
     string seperator = " |";
