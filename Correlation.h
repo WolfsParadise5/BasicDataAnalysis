@@ -38,21 +38,21 @@ void correlation(const vector<int> &column1, const vector<int> &column2, string 
 void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width)
 {
     int numFields = 7;
-    string seperator = " |";
+    string separator = " |";
     string result = "Sum: ";
-    int totalWidth = (width * numFields) + seperator.size() * numFields;
-    string line = seperator + string(totalWidth - 1, '-') + "|";
+    int totalWidth = (width * numFields) + separator.size() * numFields;
+    string line = separator + string(totalWidth - 1, '-') + "|";
     double mean1 = mean(column1);
     double mean2 = mean(column2);
     //display headers
     cout << line << endl;
-    cout << seperator << setw(width) << subject1 + "/x" << seperator
-        << setw(width) << subject2 + "/y" << seperator
-        << setw(width) << "a=x-mean_x" << seperator
-        << setw(width) << "b=y-mean_y" << seperator
-        << setw(width) << "a * b" << seperator
-        << setw(width) << "a * a" << seperator
-        << setw(width) << "b * b" << seperator << endl;
+    cout << separator << setw(width) << subject1 + "/x" << separator
+        << setw(width) << subject2 + "/y" << separator
+        << setw(width) << "a=x-mean_x" << separator
+        << setw(width) << "b=y-mean_y" << separator
+        << setw(width) << "a * b" << separator
+        << setw(width) << "a * a" << separator
+        << setw(width) << "b * b" << separator << endl;
     cout << line << endl;
     //values
 //    double totalA, totalB, n;
@@ -61,22 +61,22 @@ void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, 
     {
         double a = column1[i] - mean1;
         double b = column2[i] - mean2;
-        cout << seperator << setw(width) << column1[i] << seperator
-            << setw(width) << column2[i] << seperator
-            << setw(width) << a << seperator
-            << setw(width) << b << seperator
-            << setw(width) << a * b << seperator
-            << setw(width) << a * a << seperator
-            << setw(width) << b * b << seperator << endl;
+        cout << separator << setw(width) << column1[i] << separator
+            << setw(width) << column2[i] << separator
+            << setw(width) << a << separator
+            << setw(width) << b << separator
+            << setw(width) << a * b << separator
+            << setw(width) << a * a << separator
+            << setw(width) << b * b << separator << endl;
 //        totalA += a * a;
 //        totalB += b * b;
 //        n += a * b;
     }
     cout << line << endl;
-    cout << seperator << setw(width*4 + seperator.size()*4) << result//jump to column 4
-        << setw(width) << sumCorrel(column1, column2) << seperator
-        << setw(width) << sumCorrel(column1, column1) << seperator
-        << setw(width) << sumCorrel(column2, column2) << seperator << endl;
+    cout << separator << setw(width*4 + separator.size()*4) << result//jump to column 4
+        << setw(width) << sumCorrel(column1, column2) << separator
+        << setw(width) << sumCorrel(column1, column1) << separator
+        << setw(width) << sumCorrel(column2, column2) << separator << endl;
     cout << line << endl;
 }
 double sumCorrel(const vector<int> &column1, const vector<int> &column2)

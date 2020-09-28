@@ -1,22 +1,11 @@
-#include <iostream>
-#include <iomanip>
-#include <vector>
-
-using namespace std;
+#include "Compute.h"
 
 void histogram (const vector <int>&value, const vector <int>&ID);
-
-//int main (){
-//    vector <int> value = {10, 25, 15};
-//    vector <int> ID    = {1191100001, 1191101212, 1191100350};
-//    histogram (value, ID);
-//    return 0;
-//}
 
 void histogram(const vector <int>&value, const vector <int>&ID){
 
     int width = 10;
-    int dataWidth = 100;//test
+    int dataWidth = maximum(value);//get maximum width
     string seperator = " |";
     string line = seperator + string(width + dataWidth + (seperator.size()*2) - 1, '-') + "|";
     //header

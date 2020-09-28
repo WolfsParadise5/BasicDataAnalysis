@@ -31,30 +31,30 @@ void linearRegression(const vector<int> &column1, const vector<int> &column2, st
 void displayLinearTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width)
 {
     int numFields = 4;
-    string seperator = " |";
+    string separator = " |";
     string result = "Sum: ";
-    int totalWidth = (width * numFields) + seperator.size() * numFields;
-    string line = seperator + string(totalWidth - 1, '-') + "|";
+    int totalWidth = (width * numFields) + separator.size() * numFields;
+    string line = separator + string(totalWidth - 1, '-') + "|";
     //display headers
     cout << line << endl;
-    cout << seperator << setw(width) << subject1 + "/x" << seperator
-        << setw(width) << subject2 + "/y" << seperator
-        << setw(width) << "x * x" << seperator
-        << setw(width) << "x * y" << seperator << endl;
+    cout << separator << setw(width) << subject1 + "/x" << separator
+        << setw(width) << subject2 + "/y" << separator
+        << setw(width) << "x * x" << separator
+        << setw(width) << "x * y" << separator << endl;
     cout << line << endl;
     //display values
     for(int i = 0; i < column1.size(); ++i)
-        cout << seperator << setw(width) << column1[i] << seperator
-            << setw(width) << column2[i] << seperator
-            << setw(width) << column1[i]*column1[i] << seperator
-            << setw(width) << column1[i]*column2[i] << seperator << endl;
+        cout << separator << setw(width) << column1[i] << separator
+            << setw(width) << column2[i] << separator
+            << setw(width) << column1[i]*column1[i] << separator
+            << setw(width) << column1[i]*column2[i] << separator << endl;
     //display result
     cout << line << endl;
-    cout << seperator << result
-        << setw(width - result.size()) <<sum(column1) << seperator
-        << setw(width) << sum(column2) << seperator
-        << setw(width) << sumMultiplication(column1, column1) << seperator
-        << setw(width) << sumMultiplication(column1, column2) << seperator << endl;
+    cout << separator << result
+        << setw(width - result.size()) <<sum(column1) << separator
+        << setw(width) << sum(column2) << separator
+        << setw(width) << sumMultiplication(column1, column1) << separator
+        << setw(width) << sumMultiplication(column1, column2) << separator << endl;
     cout << line << endl;
 }
 

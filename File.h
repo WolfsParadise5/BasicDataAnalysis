@@ -1,6 +1,6 @@
 #include <iostream>
 #include <algorithm> //to use remove
-#include <limits> //to numeric_limits function
+#include <limits> //numeric_limits function
 #include <sstream> //use string stream to separate comma
 #include <fstream>
 #include <vector>
@@ -31,7 +31,7 @@ class File
         bool getFormat(){return format;}
         int getColumn(){return column;}
         int getRow(){return row;}
-        vector<int> get1dData(const vector<vector<int> > &data, int choice);
+        vector<int> get1dData(int choice);
     private:
         string filename;//point to filename variable
         bool format; //store the result of format checking
@@ -194,8 +194,8 @@ void File::convertData(const vector<vector<string> >&data, int column)
 void File::printData()
 {
     cout << " File name: " << filename << endl;
-    cout << " Column: " << column << endl;
-    cout << " Row: " << row<< endl;
+//    cout << " Column: " << column << endl;
+//    cout << " Row: " << row<< endl;
 //
 //    for(int dataRow = 0; dataRow < dataInt.size(); ++dataRow)
 //    {
@@ -208,13 +208,13 @@ void File::printData()
 //    }
     display2dTable(dataInt, name, 9);
 }
-vector<int> File::get1dData(const vector<vector<int> > &data, int choice)
+vector<int> File::get1dData(int choice)
 {
     vector<int> vec;
 
-    for(int i = 0; i < data.size(); ++i)
+    for(int i = 0; i < dataInt.size(); ++i)
     {
-        vec.push_back(data[i][choice]);
+        vec.push_back(dataInt[i][choice]);
     }
 
     return vec;
