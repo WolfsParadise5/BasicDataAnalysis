@@ -4,14 +4,14 @@
 
 using namespace std;
 
-//void reporthtml(//const vector<string> &headers, const vector<vector<int> >&data);
-void reportmath();
-void reporteng();
-void reportsci();
-void reportmalay();
+void reporthtml(const vector<string> &headers, const vector<vector<int> >&data);
+void reportmath(const vector<vector<int> >&data);
+void reporteng(const vector<vector<int> >&data);
+void reportsci(const vector<vector<int> >&data);
+void reportmalay(const vector<vector<int> >&data);
 
 
-void reporthtml(//const vector<string> &headers, const vector<vector<int> >&data) {
+void reporthtml(const vector<string> &headers, const vector<vector<int> >&data) {
 
     ofstream htmlreport;
     htmlreport.open("report.html");
@@ -24,7 +24,7 @@ void reporthtml(//const vector<string> &headers, const vector<vector<int> >&data
 
 }
 
-void reportmath() {
+void reportmath(const vector<vector<int> >&data) {
 
     ofstream htmledit;
     htmledit.open("report.html");
@@ -40,11 +40,11 @@ void reportmath() {
 
     //Table Contents
     htmlreport.close();
-    contentTable("Math");
+    contentTable(const vector<vector<int> data);
 
 }
 
-void reporteng() {          //Add report for English
+void reporteng(const vector<vector<int> data) {          //Add report for English
 
     ofstream htmledit;
     htmledit.open("report.html");
@@ -60,12 +60,12 @@ void reporteng() {          //Add report for English
 
     //Table Contents
     htmlreport.close();
-    contentTable("English");
+    contentTable(const vector<vector<int> data);
 
 
 }
 
-void reportsci() {         //Add report for Science
+void reportsci(const vector<vector<int> >&data) {         //Add report for Science
 
     ofstream htmledit;
     htmledit.open("report.html");
@@ -81,11 +81,11 @@ void reportsci() {         //Add report for Science
 
     //Table Contents
     htmlreport.close();
-    contentTable("Science");
+    contentTable(const vector<vector<int> data);
 
 }
 
-void reportmalay() {   //Add report for Malay
+void reportmalay(const vector<vector<int> >&data) {   //Add report for Malay
 
     ofstream htmledit;
     htmledit.open("report.html");
@@ -101,49 +101,51 @@ void reportmalay() {   //Add report for Malay
 
     //Table Contents
     htmlreport.close();
-    contentTable("Malay"); //string subject to change
+    contentTable(const vector<vector<int> data); //string subject to change
 
 }
 
-void contentTable(string type) {   //Add the content
+void contentTable(const vector<vector<int> >&data) {   //Add the content
     //STRING FUNCTION SUBJECT TO CHANGE
     ofstream htmledit;
     htmledit.open("report.html");
 
     htmledit << "   <tr>";
     htmledit << "       <td>Mininum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>" << data[0] << "</td>";
     htmledit << "   </tr>";
 
 
     htmledit << "   <tr>";
     htmledit << "       <td>Maximum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>" << data[1] << "</td>";
     htmledit << "   </tr>";
 
 
     htmledit << "   <tr>";
-    htmledit << "       <td>Mininum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>Min</td>";
+    htmledit << "       <td>" << data[2] << "</td>";
     htmledit << "   </tr>";
 
 
     htmledit << "   <tr>";
-    htmledit << "       <td>Mininum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>Median</td>";
+    htmledit << "       <td>" << data[3] << "</td>";
     htmledit << "   </tr>";
 
 
     htmledit << "   <tr>";
-    htmledit << "       <td>Mininum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>Variance</td>";
+    htmledit << "       <td>" << data[4] << "</td>";
     htmledit << "   </tr>";
 
 
     htmledit << "   <tr>";
-    htmledit << "       <td>Mininum</td>";
-    htmledit << "       <td>Value</td>";
+    htmledit << "       <td>Standard Deviation</td>";
+    htmledit << "       <td>" << data[5] << "</td>";
     htmledit << "   </tr>";
+
+    htmledit.close();
 
 
 }
