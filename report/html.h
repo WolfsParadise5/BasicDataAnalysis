@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void reporthtml(//const vector<string> &headers, const vector<vector<int> >&data);
+//void reporthtml(//const vector<string> &headers, const vector<vector<int> >&data);
 void reportmath();
 void reporteng();
 void reportsci();
