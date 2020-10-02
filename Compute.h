@@ -12,7 +12,7 @@ string separator = " |";
 string displayColumn(const vector<vector<int> > &data, const vector<string> &headers, int width);//return line
 void displayMax(const vector<vector<int> > &data, const vector<string> &headers);
 //minimum
-int minimum(const vector<int> &column);//minimum
+int minimum(const vector<int> &column);
 //maximum
 int maximum(const vector<int> &column);
 
