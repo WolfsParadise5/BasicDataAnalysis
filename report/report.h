@@ -117,6 +117,4 @@ void addReportHtml(const vector<string> &type, const vector<vector<int> >&report
 
     htmlreport.close();
 
-
-
 }
