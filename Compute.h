@@ -15,8 +15,10 @@ void displayMax(const vector<vector<int> > &data, const vector<string> &headers)
 int minimum(const vector<int> &column);
 //maximum
 int maximum(const vector<int> &column);
-
-//mean, median,......
+//mean
+double mean(const vector<int> column);
+//median
+double median(const vector<int> column);
 
 int minimum(const vector<int> &column)
 {
@@ -26,6 +28,21 @@ int minimum(const vector<int> &column)
 int maximum(const vector<int> &column)
 {
     return *max_element(column.begin(), column.end());
+}
+
+double mean(const vector<int> column)
+{
+    double sum = accumulate(column.begin(), column.end(), 0);
+    double mean = sum / column.size();
+    return mean;
+}
+
+double median(const vector<int> column)
+{
+    int size = column.size();
+    sort(number.begin(), number.end());
+    double median = (column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
+    return median;
 }
 
 string displayColumn(const vector<vector<int> > &data, const vector<string> &headers, int width)
