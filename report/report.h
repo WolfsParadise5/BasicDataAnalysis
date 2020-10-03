@@ -5,18 +5,17 @@
 
 using namespace std;
 
-void reportTxt(const vector<string> &headers, const vector<vector<int> >&data); // Starter function to run the other functions
-vector<double> convData(const vector<vector<int> >&data); //Convert data for report usage
-void addReportTxt(const vector<string> &type, const vector<vector<int> >&reportdata); // Starts the report creation
-void addReportHtml(const vector<string> &type, const vector<vector<int> >&reportdata); // Starts the report creationn for html
+void reportTxt(); // Starter function to run the other functions
+void addReportTxt(const vector<string> &type, const vector<double> &reportdata); // Starts the report creation
+void addReportHtml(const vector<string> &type, const vector<double> &reportdata); // Starts the report creation for html
 
 
-void reportTxt(const vector<string> &headers, const vector<vector<int> >&data){
+void reportTxt(){
 
-    vector<double> reportdata = convData(data);
+    const vector<double> reportdata = {2.3,45.2,2.2,24.3,6.4,3.1};
 
     //Might need to fix the subject passing matter
-    vector<string> reporttype = {"Math","Minimum", "Maximum", "Min", "Median", "Variance", "Standard Deviation"};
+    const vector<string> reporttype = {"Math","Minimum", "Maximum", "Min", "Median", "Variance", "Standard Deviation"};
 
     //Difference starts here
     addReportTxt(reporttype, reportdata);
@@ -24,48 +23,28 @@ void reportTxt(const vector<string> &headers, const vector<vector<int> >&data){
 
 }
 
-
-vector<double> convData(const vector<vector<int> >&data) {
-
-    vector<double> reportdata;
-
-    //Might require typecasting
-    reportdata.push_back(minimum(data));
-    reportdata.push_back(maximum(data));
-    reportdata.push_back(mean(data));
-    reportdata.push_back(median(data));
-    reportdata.push_back(variance(data));
-    reportdata.push_back(standardDeviation(data));
-
-    return reportdata;
-
-}
-
-
-void addReportTxt(const vector<string> &type, const vector<vector<int> >&reportdata) {
+void addReportTxt(const vector<string> &type, const vector<double> &reportdata) {
 
     ofstream txtreport;
     txtreport.open("report.txt");
 
     //The way function is passed needs reworking
     if (type[0] == "Math")
-        txtreport << "Report for the Subject Math";
+        txtreport << "Report for the Subject Math" << endl;
 
     else if (type[0] == "English")
-        txtreport << "Report for the Subject English";
+        txtreport << "Report for the Subject English" << endl;
 
     else if (type[0] == "Science")
-        txtreport << "Report for the Subject Science";
+        txtreport << "Report for the Subject Science" << endl;
 
     else if (type[0] == "Malay")
-        txtreport << "Report for the Subject Malay";
+        txtreport << "Report for the Subject Malay" << endl;
 
 
     for(int i = 1; i < 7; ++i) {    //to write first item to txt
 
-        for (int j=0; j < 6; ++j) {
-
-            txtreport << type.at(i) <<": " << reportdata.at(j) << endl;
+        txtreport << type.at(i) <<": " << reportdata.at(i-1) << endl;
 
     }
 
@@ -75,7 +54,7 @@ void addReportTxt(const vector<string> &type, const vector<vector<int> >&reportd
 }
 
 
-void addReportHtml(const vector<string> &type, const vector<vector<int> >&reportdata) {
+void addReportHtml(const vector<string> &type, const vector<double> &reportdata) {
 
     ofstream htmlreport;
     htmlreport.open("report.html");
@@ -83,16 +62,16 @@ void addReportHtml(const vector<string> &type, const vector<vector<int> >&report
     htmlreport << "<!DOCTYPE html>\n<html>\n<head>\nTable Report\n</head>\n<body>" << endl;
     //The way function is passed needs reworking
     if (type[0] == "Math")
-        txtreport << "<h1>Report for the Subject Math</h1>";
+        htmlreport << "<h1>Report for the Subject Math</h1>";
 
     else if (type[0] == "English")
-        txtreport << "<h1>Report for the Subject English</h1>";
+        htmlreport << "<h1>Report for the Subject English</h1>";
 
     else if (type[0] == "Science")
-        txtreport << "<h1>Report for the Subject Science</h1>";
+        htmlreport << "<h1>Report for the Subject Science</h1>";
 
     else if (type[0] == "Malay")
-        txtreport << "<h1>Report for the Subject Malay</h1>";
+        htmlreport << "<h1>Report for the Subject Malay</h1>";
 
     htmlreport << "<p></p>" << endl;  //Create gap
 
@@ -105,14 +84,14 @@ void addReportHtml(const vector<string> &type, const vector<vector<int> >&report
 
     for(int i = 1; i < 7; ++i) {    //to write first item to txt
 
-        for (int j=0; j < 6; ++j) {
-
             htmlreport << "   <tr>" << endl;
             htmlreport << "       <td>" << type.at(i) << "</td>" << endl;
-            htmlreport << "       <td>" << reportdata.at(j) << "</td>" << endl;
+            htmlreport << "       <td>" << reportdata.at(i-1) << "</td>" << endl;
             htmlreport << "   </tr>" << endl;
 
     }
+
+
 
 
     htmlreport.close();
