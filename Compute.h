@@ -41,17 +41,18 @@ double median(const vector<int> column)
 {
 double median(const vector<int> column)
 {
-    int size = column.size();
-    sort(number.begin(), number.end());
-    if (column % 2 == 0)
+    sort(numbers.begin(), numbers.end());
+    int size = numbers.size();
+    double median;
+    if (size % 2 == 0)
     {
-        return (double)(column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
+        median = (double)(numbers[numbers.size() / 2 - 1] + numbers[numbers.size() / 2]) / 2;
     }
     else
     {
-        return (double)column[column.size / 2]
+        median = (double) numbers[numbers.size() / 2];
     }
-}
+    return median;
 }
 
 double variance(const vector<int> column)
