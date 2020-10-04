@@ -41,12 +41,12 @@ double median(const vector<int> column)
 {
 double median(const vector<int> column)
 {
-    sort(numbers.begin(), numbers.end());
-    int size = numbers.size();
+    sort(column.begin(), column.end());
+    int size = column.size();
     double median;
     if (size % 2 == 0)
     {
-        median = (double)(numbers[numbers.size() / 2 - 1] + numbers[numbers.size() / 2]) / 2;
+        median = (double)(column[column.size() / 2 - 1] + column[column.size() / 2]) / 2;
     }
     else
     {
