@@ -41,8 +41,44 @@ double median(const vector<int> column)
 {
     int size = column.size();
     sort(number.begin(), number.end());
-    double median = (column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
+    double median = (double)(column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
     return median;
+}
+
+double variance(const vector<int> column)
+{
+    double m = mean(column)
+
+    double variance = 0;
+    for (int i = 0; i < column.size() ;i++)
+    {
+        variance += ((column[i] - m) * (column[i] - m));
+    }
+    double total = variance / (column.size() - 1);
+    return total;
+}
+
+double standardDeviation(const vector<int> column)
+{
+    double v = variance(column);
+    return sqrt(v);
+}
+
+vector<vector<int>> aboveBelow (const vector<vector<int>>& vec, int choice)
+{
+    double m = mean(get1dData(vec, choice));
+    vector<vector<int>> v = vec;
+    sortAscending (v, choice);
+    vector<vector<int>> result;
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (v[i][choice] < m)
+        {
+            result.push_back(v[i]);
+        }
+    }
+    return result;
+
 }
 
 string displayColumn(const vector<vector<int> > &data, const vector<string> &headers, int width)
