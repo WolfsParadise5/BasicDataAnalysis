@@ -10,17 +10,18 @@
 //
 
 #include <iostream>
-#include <algorithm> //to use remove
+#include <algorithm> //to use remove, min and max
 #include <limits> //numeric_limits function
 #include <sstream> //use string stream to separate comma
 #include <fstream>
 #include <vector>
 #include <iomanip>
 #include <cmath>
+#include <numeric>
 
 using namespace std;
 
-//File
+//Classes
 class File
 {
     public:
@@ -68,8 +69,15 @@ class Menu
         void report();
         //compute stats
         void displayMaxMin(int width, bool maxMin); //true for max, false for min
+        void displayMedian(int width);
+        void displayMean(int width);
+        void displayVar(int width);
+        void displayStdDev();
         void displayFrequency();
         void displayHistogram();
+        void displayTablesMean();
+        //above below mean
+        vector<vector<int>> aboveBelow(int choice, bool isBelow); //true = below, false = above
         //selects
         void displayHeaders(const vector<string> &headers, int startFrom);
         int selectCol(const vector<string> &headers, string subTitle, int startFrom);
@@ -84,17 +92,22 @@ class Menu
 
 //function prototypes
 //tables
-string displayColumn(const vector<vector<int> > &data, const vector<string> &headers, int width);//return line
+void displayColumn(const vector<vector<int> > &data, const vector<string> &headers, string &line, int width);//for min, max, ....
 void displayMax(const vector<vector<int> > &data, const vector<string> &headers);
 //minimum
 int minimum(const vector<int> &column);
 //maximum
 int maximum(const vector<int> &column);
-
-//Sorting
-void sortAscending (vector<vector<int>>& vec, int choice);
-void sortDescending (vector<vector<int>>& vec, int choice);
-
+//median
+double median(const vector<int> &column);
+//mean
+double mean(const vector<int> &column);
+int getSum(const vector<int> &column);
+//variance
+double variance(const vector<int> &column);
+double varianceSum(const vector<int> &column);
+//std deviation
+double standardDeviation(const vector<int> &column);
 //Frequency Table
 void frequency(const vector <int>&value);
 
@@ -102,21 +115,28 @@ void frequency(const vector <int>&value);
 vector<int> getHistoVal(const vector <int>&value);//count marks
 void histogram (const vector <int>&value);
 
+//tables above and below mean inside Menu class -> get access to get1dData functions
+
 //Linear
-int sum(const vector<int> &column);
-int sumMultiplication(const vector<int> &column1, const vector<int> &column2);
+int sum(const vector<int> &column);//sum all values
+int sumMultiplication(const vector<int> &column1, const vector<int> &column2);//sum of multiplication
 double slope(const vector<int> &column1, const vector<int> &column2);
 double intercept(const vector<int> &column1, const vector<int> &column2, double slope);
 void displayLinearTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width);
-void slopeStep(const vector<int> &column1, const vector<int> &column2);
-void interceptStep(const vector<int> &column1, const vector<int> &column2, double slope);
-void linearRegression(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);
+void slopeStep(const vector<int> &column1, const vector<int> &column2);//show steps of slope calculation
+void interceptStep(const vector<int> &column1, const vector<int> &column2, double slope);//show steps of intercept calculation
+void linearRegression(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);//combine everything
+
 //Correlation
-void correlation(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);
+void correlation(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);//combine everything
 double getCorrel(const vector<int> &column1, const vector<int> &column2);//calculate correlation
 void displayCorrelTable(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2, int width);
-double sumCorrel(const vector<int> &column1, const vector<int> &column2);
+double sumCorrel(const vector<int> &column1, const vector<int> &column2);//sum of value - mean
 void correlStep(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);//display correlation steps
+
+//Sorting
+void sortAscending(vector<vector<int>>& vec, int choice);
+void sortDescending(vector<vector<int>>& vec, int choice);
 
 int main()
 {
@@ -151,7 +171,7 @@ void Menu::title(string title)
 int Menu::getChoice(int max)
 {
     int choice;
-    int min = 0;
+    int min = 0;//0 = exit
 
     cout << " 0.)Exit" << endl;
     cout << " 999.)Main Menu" << endl;
@@ -225,8 +245,8 @@ void Menu::loadFile()
     if(data.getFormat())
     {
         if(dataPtr != nullptr){ //if theres data inside pointer
-        delete dataPtr; //delete pointer to prevent memory leak
-        dataPtr = nullptr;
+            delete dataPtr; //delete pointer to prevent memory leak
+            dataPtr = nullptr;
         }
         dataPtr = &data;//if format is correct, point to the latest data
     }
@@ -258,18 +278,22 @@ void Menu::computeStats()
 
         switch(choice){
             case 1:
-                displayMaxMin(12, false);
+                displayMaxMin(16, false);
                 break;
             case 2:
-                displayMaxMin(12, true);
+                displayMaxMin(16, true);
                 break;
             case 3:
+                displayMedian(16);
                 break;
             case 4:
+                displayMean(16);
                 break;
             case 5:
+                displayVar(22);
                 break;
             case 6:
+                displayStdDev();
                 break;
             case 7:
                 displayFrequency();
@@ -278,6 +302,7 @@ void Menu::computeStats()
                 displayHistogram();
                 break;
             case 9:
+                displayTablesMean();
                 break;
             case 10:
                 select2Col(dataPtr->getHeader());
@@ -289,8 +314,7 @@ void Menu::computeStats()
     system("pause");
     mainMenu();
 }
-//max, min, mean, median, ...
-//string separator from Compute.h
+//Compute Stats
 void Menu::displayMaxMin(int width, bool maxMin)
 {
     string separator = " |";
@@ -303,8 +327,8 @@ void Menu::displayMaxMin(int width, bool maxMin)
         result = "Minimum:";
         title("Minimum");
     }
-
-    string line = displayColumn(dataPtr->getDataInt(), dataPtr->getHeader(), width);//Compute.h
+    string line;
+    displayColumn(dataPtr->getDataInt(), dataPtr->getHeader(), line, width);
 
     cout << separator << result
         << setw(width - result.size());
@@ -323,6 +347,118 @@ void Menu::displayMaxMin(int width, bool maxMin)
     cout << endl;
     cout << line << endl;
 
+    system("pause");
+    computeStats();
+}
+//display median
+void Menu::displayMedian(int width)
+{
+    string separator = " |";
+    string line;
+    string result = "Median: ";
+    system("cls||clear");
+    title("Median");
+    displayColumn(dataPtr->getDataInt(), dataPtr->getHeader(), line, width);
+    cout << separator << result
+        << setw(width - result.size());
+    for(int i = 1; i < dataPtr->getColumn(); ++i){
+        if(i > 1)
+            cout << setw(width);
+        cout << median(dataPtr->get1dData(i)) << separator;
+    }
+
+    cout << endl << line << endl;
+    system("pause");
+    computeStats();
+}
+//display mean
+void Menu::displayMean(int width)
+{
+    string separator = " |";
+    string line;
+    string result = "Sum: ";
+    string result2 = "Mean: ";
+    system("cls||clear");
+    title("Mean");
+    displayColumn(dataPtr->getDataInt(), dataPtr->getHeader(), line, width);
+    cout << separator << result
+        << setw(width - result.size());
+    for(int i = 1; i < dataPtr->getColumn(); ++i){
+        if(i > 1)
+            cout << setw(width);
+        cout << getSum(dataPtr->get1dData(i)) << separator;
+    }
+
+    cout << endl << line << endl;
+    cout << separator << result2
+        << setw(width - result2.size());
+    for(int i = 1; i < dataPtr->getColumn(); ++i){
+        if(i > 1)
+            cout << setw(width);
+        cout << mean(dataPtr->get1dData(i)) << separator;
+    }
+
+    cout << endl << line << endl;
+    system("pause");
+    computeStats();
+}
+//display variance
+void Menu::displayVar(int width)
+{
+    vector<string> headers = dataPtr->getHeader();
+    int choice = selectCol(headers, "Variance", 1);
+
+    int numFields = 3;
+    string separator = " |";
+    string result = "Sum: ";
+    int totalWidth = (numFields*width) + (separator.size()*numFields);
+    string line = separator + string(totalWidth - 1, '-') + "|";;
+    system("cls||clear");
+    title("Variance");
+    cout << " Variance for " << headers[choice] << endl;
+
+    vector<int> column = dataPtr->get1dData(choice);
+    double m = mean(column);
+    double sum = 0;
+    //display headers
+    cout << line << endl;
+    cout << separator << setw(width) << headers[choice] + "/ x" << separator
+            << setw(width) << "x-mean_x" << separator
+            << setw(width)<< "(x-mean_x)*(x-mean_x)" << separator << endl;
+    cout << line << endl;
+    //display data
+    for(int j = 0; j < dataPtr->getRow(); ++j)
+    {
+        sum += (column[j] - m)*(column[j] - m);
+        cout << separator << setw(width) << column[j] << separator
+                << setw(width) << column[j] - m << separator
+                << setw(width) << (column[j] - m)*(column[j] - m) << separator << endl;
+    }
+    cout << line << endl;
+    //display sum
+    cout << separator << setw(width*2 + separator.size()* 2) << result << setw(width) << sum << separator << endl;
+    cout << line << endl;
+    cout << " Variance = sum((x - mean_x)*(x - mean_x)) / (n - 1)" << endl;
+    cout << " Variance = " << varianceSum(column) << " / " << column.size() - 1 << endl;
+    cout << " Variance = " << variance(column) << endl;
+    system("pause");
+    displayVar(width);
+}
+//display std deviation
+void Menu::displayStdDev()
+{
+    system("cls||clear");
+    title("Standard Deviation");
+    vector<string> headers = dataPtr->getHeader();
+    cout << " Standard Deviation for " << headers.size() - 1 << " Subjects:" << endl << endl;
+    for(int i = 1; i < dataPtr->getColumn(); ++i)
+    {
+        cout << " Subject: " << headers[i] << endl;
+        cout << " Variance = " << variance(dataPtr->get1dData(i)) << endl;
+        cout << " Standard Deviation = sqrt(" << variance(dataPtr->get1dData(i)) << ")" << endl;
+        cout << " Standard Deviation = " << standardDeviation(dataPtr->get1dData(i)) << endl;
+        cout << endl;
+    }
     system("pause");
     computeStats();
 }
@@ -351,6 +487,23 @@ void Menu::displayHistogram()
     system("pause");
 
     displayHistogram();
+}
+//display tables between the mean
+void Menu::displayTablesMean()
+{
+    vector<string> headers = dataPtr->getHeader();
+    int choice = selectCol(headers, "Tables between the mean", 1);
+
+    system("cls||clear");
+    title("Table between the mean");
+    cout << " Column: " << headers[choice] << endl;
+    cout << " Mean: " << mean(dataPtr->get1dData(choice)) << endl << endl;
+    cout << " Table below " << headers[choice] << " mean" << endl;
+    dataPtr->display2dTable(aboveBelow(choice, true), headers, 10);
+    cout << "\n Table above " << headers[choice] << " mean" << endl;
+    dataPtr->display2dTable(aboveBelow(choice, false), headers, 10);
+    system("pause");
+    displayTablesMean();
 }
 //display headers for select column
 void Menu::displayHeaders(const vector<string> &headers, int startFrom)
@@ -537,15 +690,212 @@ void Menu::sorting(const vector<vector<int>> &data, const vector<string>headers,
     preview();
 }
 
-//Correlation
-double mean(const vector<int> column)
+//Compute
+//minimum
+int minimum(const vector<int> &column)
 {
-    double total = 0;
-    for(int i = 0; i < column.size(); ++i)
-        total += column[i];
-
-    return total / column.size();
+    return *min_element(column.begin(), column.end());
 }
+//maximum
+int maximum(const vector<int> &column)
+{
+    return *max_element(column.begin(), column.end());
+}
+//median
+double median(const vector<int> &column)
+{
+    vector<int> vec = column;
+    sort(vec.begin(), vec.end());
+    int size = vec.size();
+    double median;
+    if (size % 2 == 0)
+    {   //1 2 3 4 = 4/2 = 2
+        median = (double)(vec[size / 2 - 1] + vec[size / 2]) / 2;
+    }
+    else
+    {
+        median = (double)vec[size / 2];
+    }
+    return median;
+}
+//mean
+double mean(const vector<int> &column)
+{
+    int sum = getSum(column);
+    double mean = (double)sum / column.size();
+    return mean;
+}
+int getSum(const vector<int> &column)
+{
+    return accumulate(column.begin(), column.end(), 0);
+}
+//variance
+double variance(const vector<int> &column)
+{
+    double sum = varianceSum(column);
+
+    double result = sum / (column.size() - 1);
+    return result;
+}
+double varianceSum(const vector<int> &column)
+{
+    double sum = 0;
+    double m = mean(column);
+    for(int i = 0; i < column.size(); ++i)
+        sum += ((column[i] - m) * (column[i] - m));
+    return sum;
+}
+//std deviation
+double standardDeviation(const vector<int> &column)
+{
+    double v = variance(column);
+    return sqrt(v);
+}
+//display table for minimum, maximum, ...
+void displayColumn(const vector<vector<int> > &data, const vector<string> &headers, string &line, int width)
+{
+    string separator = " |";
+    int numFields = headers.size() - 1;
+    int totalWidth = (width * numFields) + (separator.size() * numFields);
+    line = separator + string(totalWidth - 1, '-') + "|";
+
+    //print table headers
+    cout << line << endl;
+    cout << separator;
+    for(int i = 1; i < headers.size(); ++i)
+        cout << setw(width) << headers[i] << separator;
+    cout << endl << line << endl;
+
+    //print table body
+    for(int i = 0; i < data.size(); ++i)
+    {
+        cout << separator;
+        for(int j = 1; j < headers.size(); ++j)
+            cout << setw(width) << data[i][j] << separator;
+        cout << endl;
+    }
+    cout << line << endl;
+}
+
+//Frequency Table
+void frequency(const vector<int> &values)
+{
+    int width = 10;
+    int numFields = 2;
+    string separator = " |";
+    int totalWidth = (width * numFields) + (separator.size() * numFields);
+    string line = separator + string(totalWidth - 1, '-') + "|";
+
+    //headers
+    cout << line << endl;
+    cout << separator << setw(width) << "Values" << separator << setw(width) << "Frequency" << separator << endl;
+    cout << line << endl;
+    for(int i = 0; i <= 100; ++i) //100marks
+    {
+        int count = 0;
+        cout << separator << setw(width) << i << separator;
+        for(int j = 0; j < values.size(); ++j)
+        {
+            if(values[j] == i)
+                ++count;
+        }
+        cout << setw(width) << count << separator << endl;
+    }
+    cout << line << endl;
+}
+
+//Histogram
+vector<int> getHistoVal(const vector <int>&value)
+{
+    //0-10, 11-20, 21-30, 31-40, 41-50, 51-60, 61-70, 71-80, 81-90, 91-100
+    vector<int> result(10, 0);//total 9
+    for(int i = 0; i < value.size(); ++i)
+    {
+        if(value[i] > 0 && value[i] <= 10)
+            ++result[0];
+        else if(value[i] > 10 && value[i] <= 20)
+            ++result[1];
+        else if(value[i] > 20 && value[i] <= 30)
+            ++result[2];
+        else if(value[i] > 30 && value[i] <= 40)
+            ++result[3];
+        else if(value[i] > 40 && value[i] <= 50)
+            ++result[4];
+        else if(value[i] > 50 && value[i] <= 60)
+            ++result[5];
+        else if(value[i] > 60 && value[i] <= 70)
+            ++result[6];
+        else if(value[i] > 70 && value[i] <= 80)
+            ++result[7];
+        else if(value[i] > 80 && value[i] <= 90)
+            ++result[8];
+        else if(value[i] > 90 && value[i] <= 100)
+            ++result[9];
+    }
+    return result;
+}
+void histogram(const vector <int>&value)
+{
+    int width = 15;
+    vector<string> name = {"0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
+    vector<int> result = getHistoVal(value);
+    int dataWidth;//get maximum width
+    if(maximum(result) < 7)
+        dataWidth = 7;
+    else
+        dataWidth = maximum(result);
+    string seperator = " |";
+    string line = seperator + string(width + dataWidth + (seperator.size()*2) - 1, '-') + "|";
+    //header
+    cout << " * = 1" << endl;
+    cout << line << endl;
+    cout << seperator << setw(width)<< "Class Interval" << seperator << left << setw(dataWidth) << " Values" << seperator << endl;
+    cout << line << endl;
+
+        for (int i = name.size() - 1; i >= 0; i--)
+        {
+            cout << right << seperator << setw(width) << name[i] << left << seperator;//id
+                for (int j = 0; j < dataWidth; j++)
+                {
+                    if(result[i] > j)
+                        cout << "*";
+                    else
+                        cout << " ";
+                }
+            cout << seperator << endl;
+        }
+    cout << line << endl;
+}
+//Tables between the mean
+vector<vector<int>> Menu::aboveBelow (int choice, bool isBelow)
+{
+    double m = mean(dataPtr->get1dData(choice));
+    vector<vector<int>> v = dataPtr->getDataInt();
+    sortAscending (v, choice);
+    vector<vector<int>> result;
+    if(isBelow)
+    {
+        for (int i = 0; i < v.size(); i++)
+        {
+            if (v[i][choice] < m)
+            {
+                result.push_back(v[i]);
+            }
+        }
+    }else
+    {
+        for (int i = 0; i < v.size(); i++)
+        {
+            if (v[i][choice] > m)
+            {
+                result.push_back(v[i]);
+            }
+        }
+    }
+    return result;
+}
+
+//Correlation
 
 void correlation(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2)
 {
@@ -729,97 +1079,8 @@ int sumMultiplication(const vector<int> &column1, const vector<int> &column2)
 
     return sum;
 }
-//Frequency Table
-void frequency(const vector<int> &values)
-{
-    int width = 10;
-    int numFields = 2;
-    string separator = " |";
-    int totalWidth = (width * numFields) + (separator.size() * numFields);
-    string line = separator + string(totalWidth - 1, '-') + "|";
 
-    //headers
-    cout << line << endl;
-    cout << separator << setw(width) << "Marks" << separator << setw(width) << "Frequency" << separator << endl;
-    cout << line << endl;
-    for(int i = 0; i <= 100; ++i) //100marks
-    {
-        int count = 0;
-        cout << separator << setw(width) << i << separator;
-        for(int j = 0; j < values.size(); ++j)
-        {
-            if(values[j] == i)
-                ++count;
-        }
-        cout << setw(width) << count << separator << endl;
-    }
-    cout << line << endl;
-}
-
-//Histogram
-vector<int> getHistoVal(const vector <int>&value)
-{
-    //0-10, 11-20, 21-30, 31-40, 41-50, 51-60, 61-70, 71-80, 81-90, 91-100
-    vector<int> result(10, 0);//total 9
-    for(int i = 0; i < value.size(); ++i)
-    {
-        if(value[i] > 0 && value[i] <= 10)
-            ++result[0];
-        else if(value[i] > 10 && value[i] <= 20)
-            ++result[1];
-        else if(value[i] > 20 && value[i] <= 30)
-            ++result[2];
-        else if(value[i] > 30 && value[i] <= 40)
-            ++result[3];
-        else if(value[i] > 40 && value[i] <= 50)
-            ++result[4];
-        else if(value[i] > 50 && value[i] <= 60)
-            ++result[5];
-        else if(value[i] > 60 && value[i] <= 70)
-            ++result[6];
-        else if(value[i] > 70 && value[i] <= 80)
-            ++result[7];
-        else if(value[i] > 80 && value[i] <= 90)
-            ++result[8];
-        else if(value[i] > 90 && value[i] <= 100)
-            ++result[9];
-    }
-    return result;
-}
-void histogram(const vector <int>&value)
-{
-    int width = 15;
-    vector<string> name = {"0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
-    vector<int> result = getHistoVal(value);
-    int dataWidth;//get maximum width
-    if(maximum(result) < 7)
-        dataWidth = 7;
-    else
-        dataWidth = maximum(result);
-    string seperator = " |";
-    string line = seperator + string(width + dataWidth + (seperator.size()*2) - 1, '-') + "|";
-    //header
-    cout << " * = 1" << endl;
-    cout << line << endl;
-    cout << seperator << setw(width)<< "Class Interval" << seperator << left << setw(dataWidth) << " Values" << seperator << endl;
-    cout << line << endl;
-
-        for (int i = name.size() - 1; i >= 0; i--)
-        {
-            cout << right << seperator << setw(width) << name[i] << left << seperator;//id
-                for (int j = 0; j < dataWidth; j++)
-                {
-                    if(result[i] > j)
-                        cout << "*";
-                    else
-                        cout << " ";
-                }
-            cout << seperator << endl;
-        }
-    cout << line << endl;
-}
-
-
+//Reports
 //Sorting
 void sortAscending (vector<vector<int>>& vec, int choice)
 {
@@ -863,53 +1124,6 @@ void sortDescending (vector<vector<int>>& vec, int choice)
 
       swap(vec[maxIndex], vec[i]);
     }
-}
-
-//Compute
-//minimum
-int minimum(const vector<int> &column)
-{
-    return *min_element(column.begin(), column.end());
-}
-//maximum
-int maximum(const vector<int> &column)
-{
-    return *max_element(column.begin(), column.end());
-}
-//median
-
-//mean
-
-//variance
-
-//std deviation
-
-//display table for minimum, maximum, ...
-string displayColumn(const vector<vector<int> > &data, const vector<string> &headers, int width)
-{
-    string separator = " |";
-    int numFields = headers.size() - 1;
-    int totalWidth = (width * numFields) + (separator.size() * numFields);
-    string line = separator + string(totalWidth - 1, '-') + "|";
-
-    //print table headers
-    cout << line << endl;
-    cout << separator;
-    for(int i = 1; i < headers.size(); ++i)
-        cout << setw(width) << headers[i] << separator;
-    cout << endl << line << endl;
-
-    //print table body
-    for(int i = 0; i < data.size(); ++i)
-    {
-        cout << separator;
-        for(int j = 1; j < headers.size(); ++j)
-            cout << setw(width) << data[i][j] << separator;
-        cout << endl;
-    }
-    cout << line << endl;
-
-    return line;
 }
 
 //Load File
