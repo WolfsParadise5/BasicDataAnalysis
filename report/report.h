@@ -59,7 +59,9 @@ void addReportHtml(const vector<string> &type, const vector<double> &reportdata)
     ofstream htmlreport;
     htmlreport.open("report.html");
 
-    htmlreport << "<!DOCTYPE html>\n<html>\n<head>\nTable Report\n</head>\n<body>" << endl;
+    htmlreport << "<!DOCTYPE html>\n<html>\n<head>"<< endl;
+    htmlreport << "<style>table, th, td { border: 1px solid black; border-collapse: collapse;" <<endl;
+    htmlreport << "</style>\nTable Report\n</head>\n<body>" << endl;
     //The way function is passed needs reworking
     if (type[0] == "Math")
         htmlreport << "<h1>Report for the Subject Math</h1>";
