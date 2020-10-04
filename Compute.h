@@ -39,10 +39,19 @@ double mean(const vector<int> column)
 
 double median(const vector<int> column)
 {
+double median(const vector<int> column)
+{
     int size = column.size();
     sort(number.begin(), number.end());
-    double median = (double)(column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
-    return median;
+    if (column % 2 == 0)
+    {
+        return (double)(column[column.size / 2 - 1] + scores[column.size / 2]) / 2;
+    }
+    else
+    {
+        return (double)column[column.size / 2]
+    }
+}
 }
 
 double variance(const vector<int> column)
