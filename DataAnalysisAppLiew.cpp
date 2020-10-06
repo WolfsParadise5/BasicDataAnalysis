@@ -264,7 +264,7 @@ void Menu::loadFile()
         dataPtr = &data;//if format is correct, point to the latest data
     }
 
-    system("pause");
+    cin.get();
     mainMenu();
 }
 
