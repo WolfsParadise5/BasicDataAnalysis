@@ -15,9 +15,11 @@
 #include <sstream> //use string stream to separate comma
 #include <fstream>
 #include <vector>
+#include <cctype>
+#include <cstdlib>
 #include <iomanip>
-#include <cmath>
-#include <numeric>
+#include <cmath>    //sqrt
+#include <numeric> //sorting function
 
 using namespace std;
 
@@ -63,6 +65,7 @@ class Menu
         void title(string title);
         void mainMenu();
         int getChoice(int max);
+        bool getDisplay(int max);
         //main menu
         void loadFile();
         void computeStats();
@@ -76,8 +79,6 @@ class Menu
         void displayFrequency();
         void displayHistogram();
         void displayTablesMean();
-        //above below mean
-        vector<vector<int>> aboveBelow(int choice, bool isBelow); //true = below, false = above
         //selects
         void displayHeaders(const vector<string> &headers, int startFrom);
         int selectCol(const vector<string> &headers, string subTitle, int startFrom);
@@ -85,6 +86,14 @@ class Menu
         void selectLinearCorrel(const vector<int> &column1, const vector<int> &column2, string subject1, string subject2);
         //report
         void preview();
+        void generateReport();//select txt or html
+        //select data
+        void selectReport(bool isTxt);//select everything
+        void computeReport(const vector<bool> &display, vector<string> &getStats, vector<double> &getResult, int sub1, const vector<int> &sub2);
+        vector<bool> selectDisplay();
+        int getSub();//select 1 sub
+        vector<int> get2Sub();//select 2 subs
+        void selectSort(bool ascDesc);
         void sorting(const vector<vector<int>> &data, const vector<string>headers, int choice, bool ascDesc);
     private:
         File *dataPtr;//point to latest file and share to all function
@@ -93,7 +102,6 @@ class Menu
 //function prototypes
 //tables
 void displayColumn(const vector<vector<int> > &data, const vector<string> &headers, string &line, int width);//for min, max, ....
-void displayMax(const vector<vector<int> > &data, const vector<string> &headers);
 //minimum
 int minimum(const vector<int> &column);
 //maximum
@@ -105,18 +113,16 @@ double mean(const vector<int> &column);
 int getSum(const vector<int> &column);
 //variance
 double variance(const vector<int> &column);
-double varianceSum(const vector<int> &column);
+double varianceSum(const vector<int> &column);//calculate sum for variance
 //std deviation
 double standardDeviation(const vector<int> &column);
 //Frequency Table
 void frequency(const vector <int>&value);
-
 //Histogram
 vector<int> getHistoVal(const vector <int>&value);//count marks
 void histogram (const vector <int>&value);
-
-//tables above and below mean inside Menu class -> get access to get1dData functions
-
+//tables above and below mean
+vector<vector<int>> aboveBelow(const vector<vector<int>> &data, double mean, int choice, bool isBelow); //true = below, false = above
 //Linear
 int sum(const vector<int> &column);//sum all values
 int sumMultiplication(const vector<int> &column1, const vector<int> &column2);//sum of multiplication
@@ -137,6 +143,13 @@ void correlStep(const vector<int> &column1, const vector<int> &column2, string s
 //Sorting
 void sortAscending(vector<vector<int>>& vec, int choice);
 void sortDescending(vector<vector<int>>& vec, int choice);
+
+//Reports
+void reportTxt(string filename, const vector<vector<string>> &data);
+void reportHtml(string filename, const vector<vector<string>> &data);
+//report table
+void display2dTableReport(ofstream &fileout, const vector<vector<string> > &data, const vector<string> &headers, int width);
+void display2dTableReportHtml(ofstream &fileout, const vector<vector<string> > &data, const vector<string> &headers);
 
 int main()
 {
@@ -338,9 +351,9 @@ void Menu::displayMaxMin(int width, bool maxMin)
         if(i > 1)
             cout << setw(width);
         if(maxMin)
-            cout << maximum(dataPtr->get1dData(i));//Compute.h
+            cout << maximum(dataPtr->get1dData(i));
         else
-            cout << minimum(dataPtr->get1dData(i));//compute.h
+            cout << minimum(dataPtr->get1dData(i));
 
         cout << separator;
     }
@@ -429,7 +442,7 @@ void Menu::displayVar(int width)
     //display data
     for(int j = 0; j < dataPtr->getRow(); ++j)
     {
-        sum += (column[j] - m)*(column[j] - m);
+        sum += pow(column[j] - m, 2);
         cout << separator << setw(width) << column[j] << separator
                 << setw(width) << column[j] - m << separator
                 << setw(width) << (column[j] - m)*(column[j] - m) << separator << endl;
@@ -496,12 +509,15 @@ void Menu::displayTablesMean()
 
     system("cls||clear");
     title("Table between the mean");
+
+    double m = mean(dataPtr->get1dData(choice));
+
     cout << " Column: " << headers[choice] << endl;
-    cout << " Mean: " << mean(dataPtr->get1dData(choice)) << endl << endl;
+    cout << " Mean: " << m << endl << endl;
     cout << " Table below " << headers[choice] << " mean" << endl;
-    dataPtr->display2dTable(aboveBelow(choice, true), headers, 10);
+    dataPtr->display2dTable(aboveBelow(dataPtr->getDataInt(), m, choice, true), headers, 10);
     cout << "\n Table above " << headers[choice] << " mean" << endl;
-    dataPtr->display2dTable(aboveBelow(choice, false), headers, 10);
+    dataPtr->display2dTable(aboveBelow(dataPtr->getDataInt(), m, choice, false), headers, 10);
     system("pause");
     displayTablesMean();
 }
@@ -613,23 +629,193 @@ void Menu::report()
 
         switch(choice){
             case 1:
-                report();//
+                generateReport();//generate report
                 break;
             case 2:
                 preview();
-                //testing
-//                system("cls||clear");
-//                title("Preview Report");
-//                dataPtr->printData();
-//                system("pause");
-//                report();
                 break;
         }
     }else
         cout << " No file is loaded" << endl;
 
-    system("pause");
+    system("pause");//window
+    //linus
     mainMenu();
+}
+//select report
+void Menu::generateReport()
+{
+    system("cls||clear");
+    title("Generate Report");
+    cout << " 1.)Txt" << endl;
+    cout << " 2.)HTML" << endl;
+    cout << " 3.)Back to Report" << endl;
+
+    int choice = getChoice(3);
+    bool isTxt;
+    switch(choice)
+    {
+        case 1:
+            isTxt = true;
+            break;
+        case 2:
+            isTxt = false;
+            break;
+        case 3:
+            report();
+    }
+    selectReport(isTxt);
+    report();
+}
+void Menu::selectReport(bool isTxt)
+{
+    int sub1 = getSub();
+    vector<bool> display = selectDisplay();
+    vector<int> sub2 = get2Sub();
+
+    vector<string> stats;
+    vector<double> result;
+    vector<string> headers = dataPtr->getHeader();
+
+    computeReport(display, stats, result, sub1, sub2);
+
+    vector<vector<string>> data;
+    //convert result into 2d vec
+    for(int i = 0; i < result.size(); ++i)
+    {
+        vector<string>temp;
+        temp.push_back(stats[i]);
+        if(i > 5)
+            temp.push_back(headers[sub2[0]] + ", " + headers[sub2[1]]);
+        else
+            temp.push_back(headers[sub1]);
+
+        char num[20];
+        sprintf(num, "%.4f", result[i]);
+        temp.push_back(num);
+
+        data.push_back(temp);
+    }
+
+    string filename;
+    cout << "Filename? ";
+    cin >> filename;
+
+    if(isTxt)
+    {
+        filename += ".txt";
+        reportTxt(filename, data);
+    }else{
+        filename += ".html";
+        reportHtml(filename, data);
+    }
+
+    system("pause");
+    report();
+}
+void Menu::computeReport(const vector<bool> &display, vector<string> &getStats, vector<double> &getResult, int sub1, const vector<int> &sub2)
+{
+    vector<string> stats = {"Minimum", "Maximum", "Median", "Mean", "Variance", "Standard Deviation", "Pearson's Correlation", "Linear Regression Line Slope, m", "Linear Regression Line Intercept, c"};
+    double result;
+
+    for(int i = 0; i < stats.size(); ++i)
+    {
+        if(display[i]){
+            getStats.push_back(stats[i]);
+            switch(i + 1)
+            {
+                case 1:
+                    result = minimum(dataPtr->get1dData(sub1));
+                    break;
+                case 2:
+                    result = maximum(dataPtr->get1dData(sub1));
+                    break;
+                case 3:
+                    result = median(dataPtr->get1dData(sub1));
+                    break;
+                case 4:
+                    result = mean(dataPtr->get1dData(sub1));
+                    break;
+                case 5:
+                    result = variance(dataPtr->get1dData(sub1));
+                    break;
+                case 6:
+                    result = standardDeviation(dataPtr->get1dData(sub1));
+                    break;
+                case 7:
+                    result = getCorrel(dataPtr->get1dData(sub2[0]), dataPtr->get1dData(sub2[1]));
+                    break;
+                case 8:
+                    result = slope(dataPtr->get1dData(sub2[0]), dataPtr->get1dData(sub2[1]));
+                    break;
+                case 9:
+                    result = intercept(dataPtr->get1dData(sub2[0]), dataPtr->get1dData(sub2[1]), slope(dataPtr->get1dData(sub2[0]), dataPtr->get1dData(sub2[1])));
+                    break;
+            }
+
+            //result = roundf(result * 10000) / 10000;
+            getResult.push_back(result);
+        }
+    }
+}
+vector<bool> Menu::selectDisplay()
+{
+    vector<bool> display(9, true);
+    vector<string> stats = {"Minimum", "Maximum", "Median", "Mean", "Variance", "Standard Deviation", "Pearson's Correlation", "Linear Regression Line"};
+    char choice;
+    for(int i = 0; i < stats.size(); ++i)
+    {
+        cout << stats[i] << "? (Y or N): ";
+        do
+        {
+            cin >> choice;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            choice = toupper(choice);
+        }while(choice != 'Y' && choice != 'N' && printf("\n ERROR Message: You have entered an invalid number. Please try again.\n"));//to check if choice is not Y and not N then loop
+        if(choice == 'N'){
+            if(i == stats.size() - 1)
+            {
+                display[i] = false;
+                display[i + 1] = false;
+            }else
+                display[i] = false;
+        }
+    }
+    return display;
+}
+//get 1 sub
+int Menu::getSub()
+{
+    vector<string> headers = dataPtr->getHeader();
+    cout << "Input only one subject number(";
+    for(int i = 1; i < dataPtr->getColumn(); ++i)
+    {
+        cout << i << " for " << headers[i];
+        if(i != dataPtr->getColumn() - 1)
+            cout << ", ";
+    }
+    cout << ")" << endl;
+    int choice = getChoice(headers.size());
+
+    return choice;
+}
+//get 2 subs
+vector<int> Menu::get2Sub()
+{
+    cout << "Input two subject numbers" << endl;
+    vector<string> headers = dataPtr->getHeader();
+    vector<int> result;
+    for(int i = 1; i < headers.size(); ++i)
+        cout << i << ". " << headers[i] << endl;
+    cout << "Input the first subject number? ";
+    int choice;
+    choice = getChoice(headers.size());
+    result.push_back(choice);
+    choice = getChoice(headers.size());
+    result.push_back(choice);
+
+    return result;
 }
 //view report table menu
 void Menu::preview()
@@ -644,17 +830,13 @@ void Menu::preview()
 
     int choice = getChoice(4);
     bool order;
-    int col;
-
     switch(choice)
     {
         case 1:
             order = true;
-            col = selectCol(dataPtr->getHeader(), "Sort Ascending W.R.T", 0);
             break;
         case 2:
             order = false;
-            col = selectCol(dataPtr->getHeader(), "Sort Descending W.R.T", 0);
             break;
         case 3:
             system("cls||clear");
@@ -663,12 +845,16 @@ void Menu::preview()
             dataPtr->printData();
             system("pause");
             preview();
-            break;
         case 4:
             report();
-            break;
     }
-    sorting(dataPtr->getDataInt(), dataPtr->getHeader(), col - 1, order);
+    selectSort(order);
+}
+//select columns for ascending / descending
+void Menu::selectSort(bool ascDesc)
+{
+    int choice = selectCol(dataPtr->getHeader(), "Sort Descending W.R.T", 0);
+    sorting(dataPtr->getDataInt(), dataPtr->getHeader(), choice - 1, ascDesc);
 }
 //display sorting
 void Menu::sorting(const vector<vector<int>> &data, const vector<string>headers, int choice, bool ascDesc)
@@ -687,7 +873,7 @@ void Menu::sorting(const vector<vector<int>> &data, const vector<string>headers,
     //print table
     dataPtr->display2dTable(temp, headers, 10);
     system("pause");
-    preview();
+    selectSort(ascDesc);
 }
 
 //Compute
@@ -709,7 +895,7 @@ double median(const vector<int> &column)
     int size = vec.size();
     double median;
     if (size % 2 == 0)
-    {   //1 2 3 4 = 4/2 = 2
+    {
         median = (double)(vec[size / 2 - 1] + vec[size / 2]) / 2;
     }
     else
@@ -867,29 +1053,24 @@ void histogram(const vector <int>&value)
     cout << line << endl;
 }
 //Tables between the mean
-vector<vector<int>> Menu::aboveBelow (int choice, bool isBelow)
+vector<vector<int>> aboveBelow (const vector<vector<int>> &data, double mean, int choice, bool isBelow)
 {
-    double m = mean(dataPtr->get1dData(choice));
-    vector<vector<int>> v = dataPtr->getDataInt();
+    vector<vector<int>> v = data;
     sortAscending (v, choice);
     vector<vector<int>> result;
     if(isBelow)
     {
         for (int i = 0; i < v.size(); i++)
         {
-            if (v[i][choice] < m)
-            {
+            if (v[i][choice] < mean)
                 result.push_back(v[i]);
-            }
         }
     }else
     {
         for (int i = 0; i < v.size(); i++)
         {
-            if (v[i][choice] > m)
-            {
+            if (v[i][choice] > mean)
                 result.push_back(v[i]);
-            }
         }
     }
     return result;
@@ -911,7 +1092,7 @@ void correlation(const vector<int> &column1, const vector<int> &column2, string 
 
     double correl = getCorrel(column1, column2);
 
-    cout << "Correlation Computation = " << correl << endl;
+    cout << " Correlation Computation = " << correl << endl;
 }
 double getCorrel(const vector<int> &column1, const vector<int> &column2)
 {
@@ -1126,6 +1307,33 @@ void sortDescending (vector<vector<int>>& vec, int choice)
     }
 }
 
+//generate report
+void reportTxt(string filename, const vector<vector<string>> &data)
+{
+
+    ofstream txtreport;
+    txtreport.open(filename.c_str());
+
+    vector<string> headers = {"Stat", "Subject(s)", "Value"};
+
+    txtreport << " Report" << endl;
+    display2dTableReport(txtreport, data, headers, 40);
+
+    txtreport.close();
+    cout << "Text Report Generated!" << endl;
+}
+void reportHtml(string filename, const vector<vector<string>> &data)
+{
+    ofstream txtreport;
+    txtreport.open(filename.c_str());
+
+    vector<string> headers = {"Stat", "Subject(s)", "Value"};
+    display2dTableReportHtml(txtreport, data, headers);
+
+    txtreport.close();
+    cout << "Text Report Generated!" << endl;
+}
+
 //Load File
 File::File()
 {
@@ -1286,12 +1494,11 @@ vector<int> File::get1dData(int choice)
     vector<int> vec;
 
     for(int i = 0; i < dataInt.size(); ++i)
-    {
         vec.push_back(dataInt[i][choice]);
-    }
 
     return vec;
 }
+
 void File::display2dTable(const vector<vector<int> > &data, const vector<string> &headers, int width)
 {
     int numFields = headers.size();
@@ -1308,6 +1515,7 @@ void File::display2dTable(const vector<vector<int> > &data, const vector<string>
     cout << endl << line << endl;
 
     //print table body
+
     for(int i = 0; i < data.size(); ++i)
     {
         cout << seperator;
@@ -1318,4 +1526,57 @@ void File::display2dTable(const vector<vector<int> > &data, const vector<string>
     }
 
     cout << line << endl;
+}
+void display2dTableReport(ofstream &fileout, const vector<vector<string> > &data, const vector<string> &headers, int width)
+{
+    int numFields = headers.size();
+    string seperator = " |";
+    int totalWidth = (width * numFields) + seperator.size() * (numFields + 1) + 5;
+    string line = seperator + string(totalWidth - 1, '-') + "|";
+
+    //print table headers
+    fileout << line << endl;
+    fileout << seperator;
+    fileout << setw(5) << "No." << seperator;
+    for(int i = 0; i < headers.size(); ++i)
+        fileout << setw(width) << headers[i] << seperator;
+    fileout << endl << line << endl;
+
+    //print table body
+    for(int i = 0; i < data.size(); ++i)
+    {
+        fileout << seperator;
+        fileout << setw(5) << i + 1 << seperator;
+        for(int j = 0; j < headers.size(); ++j)
+            fileout << setw(width) << data[i][j] << seperator;
+        fileout << endl;
+    }
+
+    fileout << line << endl;
+}
+void display2dTableReportHtml(ofstream &fileout, const vector<vector<string> > &data, const vector<string> &headers)
+{
+    //print table headers
+    fileout << "<!DOCTYPE html>\n<html>\n<head>"<< endl;
+    fileout << "<style>table, th, td { border: 1px solid black; border-collapse: collapse;" <<endl;
+    fileout << "</style>\nReport\n</head>\n<body>" << endl;
+    fileout << "<table><tr>" << endl;
+    fileout << "<tr><th>" << "No." << "</th>";
+    for(int i = 0; i < headers.size(); ++i)
+        fileout << "<th>" << headers[i] << "</th>";
+    fileout << "</tr>";
+
+    //print table body
+    for(int i = 0; i < data.size(); ++i)
+    {
+        fileout << "<tr>";
+        fileout << "<td>" << i + 1 << "</td>";
+        for(int j = 0; j < headers.size(); ++j)
+            fileout << "<td>" << data[i][j] << "</td>";
+
+        fileout << "</tr>";
+    }
+
+    fileout << "</table></body></html>";
+
 }
