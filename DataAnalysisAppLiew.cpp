@@ -855,7 +855,12 @@ void Menu::preview()
 //select columns for ascending / descending
 void Menu::selectSort(bool ascDesc)
 {
-    int choice = selectCol(dataPtr->getHeader(), "Sort Descending W.R.T", 0);
+    string title;
+    if(ascDesc)
+        title = "Sort Ascending W.R.T";
+    else
+        title = "Sort Descending W.R.T";
+    int choice = selectCol(dataPtr->getHeader(), title, 0);
     sorting(dataPtr->getDataInt(), dataPtr->getHeader(), choice - 1, ascDesc);
 }
 //display sorting
