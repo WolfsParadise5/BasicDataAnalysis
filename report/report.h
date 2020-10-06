@@ -8,7 +8,7 @@ using namespace std;
 void reportTxt(); // Starter function to run the other functions
 void addReportTxt(const vector<string> &type, const vector<double> &reportdata); // Starts the report creation
 void addReportHtml(const vector<string> &type, const vector<double> &reportdata); // Starts the report creation for html
-
+//void tableMaker();
 
 void reportTxt(){
 
@@ -50,6 +50,7 @@ void addReportTxt(const vector<string> &type, const vector<double> &reportdata) 
 
 
     txtreport.close();
+    cout << "Text Report Generated!" << endl;
 
 }
 
@@ -81,6 +82,7 @@ void addReportHtml(const vector<string> &type, const vector<double> &reportdata)
     htmlreport << "<table>" << endl;
     htmlreport << "   <tr>" << endl;
     htmlreport << "       <th>Stat Name</th>" << endl;
+    htmlreport << "       <th>Subject</th>" << endl;
     htmlreport << "       <th>Value</th>" << endl;
     htmlreport << "   </tr>" << endl;
 
@@ -88,14 +90,36 @@ void addReportHtml(const vector<string> &type, const vector<double> &reportdata)
 
             htmlreport << "   <tr>" << endl;
             htmlreport << "       <td>" << type.at(i) << "</td>" << endl;
+            htmlreport << "       <td>" << type[0] << "</td>" << endl;
             htmlreport << "       <td>" << reportdata.at(i-1) << "</td>" << endl;
             htmlreport << "   </tr>" << endl;
 
     }
 
-
-
-
     htmlreport.close();
+    cout << "HTML Report Generated!" << endl;
 
 }
+
+
+//void tableMaker(string border) {
+
+//  if (border == "top") {
+
+
+
+ //   for (int i=0; i< word;i++) {
+ //       for (int j=0; j < wordlength+4; j++){
+  //          cout << "_";
+  //      }
+  //      cout << endl;
+
+  //      cout << "| " << i << " |";
+  //  }
+  //  cout << endl;
+
+ // }
+
+
+
+

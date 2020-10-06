@@ -13,7 +13,7 @@ vector<double> getCalc(vector<string> >&selectData);
 void boolchecker(string option, vector<string> >&selectData);
 
 
-void displayInput() {   //Initial output display
+void displayInput(const vector<int>&number) {   //Initial output display
 
     int option;
     vector <string>selectData;
@@ -32,8 +32,9 @@ void displayInput() {   //Initial output display
 
     while (input != 1 || input != 2)
 
-    chooseReport(input, selectData);
-    chooseReport2(input, selectData);
+    chooseReport(selectData);
+    chooseReport2(selectData);
+    filesaver(input, selectData, number);
 
     //Check output
     for (int i=0; i < 8; i++) {
@@ -41,6 +42,7 @@ void displayInput() {   //Initial output display
         cout << selectData.at(i)
 
     }
+
 }
 
 void chooseReport(vector<vector<string> >&selectData) {     //Choosing what to put in the report (Minimum -> Standard Deviation)
@@ -132,7 +134,7 @@ void chooseReport2(vector<vector<string> >&selectData) {
 
 }
 
-void fileSaver(input,vector<string> >&selectData)  {
+void fileSaver(input,vector<string> >&selectData,  const vector<int>&number)  {
 
     string filename;
 
@@ -148,6 +150,7 @@ void fileSaver(input,vector<string> >&selectData)  {
             filename += ".txt";
         }
         selectData.push_back(filename);
+        getCalc(selectData, number);
 
     }
 
@@ -163,12 +166,14 @@ void fileSaver(input,vector<string> >&selectData)  {
             filename += ".html";
         }
         selectData.push_back(filename);
+        getCalc(selectData, number);
 
     }
 
+
 }
 
-vector<double> getCalc(vector<string> >&selectData) {  //Calculates the data requested
+vector<double> getCalc(vector<string> >&selectData, const vector<int>&number) {  //Calculates the data requested
 
     vector<double> numstats;
     vector<string> passedvalues;
@@ -177,32 +182,32 @@ vector<double> getCalc(vector<string> >&selectData) {  //Calculates the data req
         if (selectData.at(i) == "True") {
             switch(i) {
                 case 0:
-                    numstats.push_back(minimum());
+                    numstats.push_back(minimum(number));
                     passedvalues.push_back("Minimum");
                     break;
 
                 case 1:
-                    numstats.push_back(maximum());
+                    numstats.push_back(maximum(number));
                     passedvalues.push_back("Maximum");
                     break;
 
                 case 2:
-                    numstats.push_back(median());
+                    numstats.push_back(median(number));
                     passedvalues.push_back("Median");
                     break;
 
                 case 3:
-                    numstats.push_back(mean());
+                    numstats.push_back(mean(number));
                     passedvalues.push_back("Mean");
                     break;
 
                 case 4:
-                    numstats.push_back(variance());
+                    numstats.push_back(variance(number));
                     passedvalues.push_back("Variance");
                     break;
 
                 case 5:
-                    numstats.push_back(standardDeviation());
+                    numstats.push_back(standardDeviation(number));
                     passedvalues.push_back("Standard Deviation");
                     break;
 
