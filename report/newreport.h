@@ -20,8 +20,6 @@ void displayInput(const vector<int>&number) {   //Initial output display
     cout << "1. Txt file" << endl;
     cout << "2. Html file" << endl;
 
-    cout << "Input =>";
-    cin >> input;
 
     do {
         cout << "Invalid input." << endl;
@@ -53,7 +51,7 @@ void chooseReport(vector<vector<string> >&selectData) {     //Choosing what to p
     while (subinput1 != 1 || subinput2 != 2 || subinput != 3 || subinput1 != 4) {
     cout << "Input only one subject number (1 for math, 2 for eng, 3 for science, 4 for malay): ";
     cin >> subinput1;
-    errorchecker((string)subinput1, selectData);
+    errorcheckerint((subinput1, selectData);
     cout << endl;
     }
 
@@ -212,12 +210,12 @@ vector<double> getCalc(vector<string> >&selectData, const vector<int>&number) { 
                     break;
 
                 case 6:
-                    numstats.push_back(corellation());
+                    numstats.push_back(corellation(sub1, sub2));   //require init
                     passedvalues.push_back("Pearson Corellation");
                     break;
 
                 case 7:
-                    numstats.push_back(linearRegression());
+                    numstats.push_back(linearRegression(sub1, sub2)); //require init
                     passedvalues.push_back("Linear Regression");
                     break;
             }
@@ -225,7 +223,7 @@ vector<double> getCalc(vector<string> >&selectData, const vector<int>&number) { 
     }
 }
 
-void errorcheckerstr(string option, vector<vector<string> >&selectData) {   //Checks input errors
+void errorcheckerstr(string option, vector<string> >&selectData) {   //Checks input errors
 
     if (option == "Y")
         selectData.push_back("True");
@@ -238,7 +236,7 @@ void errorcheckerstr(string option, vector<vector<string> >&selectData) {   //Ch
 
 }
 
-void errorcheckerint(int option, vector<vector<string> >&selectData) {
+void errorcheckerint(int option, vector<string> >&selectData) {
 
 
     if (option == 1)
