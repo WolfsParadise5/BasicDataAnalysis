@@ -324,7 +324,7 @@ void Menu::computeStats()
     }else
         cout << " No file is loaded" << endl;
 
-    system("pause");
+    cin.get();
     mainMenu();
 }
 //Compute Stats
@@ -360,7 +360,7 @@ void Menu::displayMaxMin(int width, bool maxMin)
     cout << endl;
     cout << line << endl;
 
-    system("pause");
+    cin.get();
     computeStats();
 }
 //display median
@@ -381,7 +381,7 @@ void Menu::displayMedian(int width)
     }
 
     cout << endl << line << endl;
-    system("pause");
+    cin.get();
     computeStats();
 }
 //display mean
@@ -412,7 +412,7 @@ void Menu::displayMean(int width)
     }
 
     cout << endl << line << endl;
-    system("pause");
+    cin.get();
     computeStats();
 }
 //display variance
@@ -454,7 +454,7 @@ void Menu::displayVar(int width)
     cout << " Variance = sum((x - mean_x)*(x - mean_x)) / (n - 1)" << endl;
     cout << " Variance = " << varianceSum(column) << " / " << column.size() - 1 << endl;
     cout << " Variance = " << variance(column) << endl;
-    system("pause");
+    cin.get();
     displayVar(width);
 }
 //display std deviation
@@ -472,7 +472,7 @@ void Menu::displayStdDev()
         cout << " Standard Deviation = " << standardDeviation(dataPtr->get1dData(i)) << endl;
         cout << endl;
     }
-    system("pause");
+    cin.get();
     computeStats();
 }
 //display frequency table
@@ -484,7 +484,7 @@ void Menu::displayFrequency()
     system("cls||clear");
     title("Frequency Table for " + headers[choice]);
     frequency(dataPtr->get1dData(choice));
-    system("pause");
+    cin.get();
 
     displayFrequency();
 }
@@ -497,7 +497,7 @@ void Menu::displayHistogram()
     system("cls||clear");
     title("Histogram for " + headers[choice]);
     histogram(dataPtr->get1dData(choice));
-    system("pause");
+    cin.get();
 
     displayHistogram();
 }
@@ -518,7 +518,7 @@ void Menu::displayTablesMean()
     dataPtr->display2dTable(aboveBelow(dataPtr->getDataInt(), m, choice, true), headers, 10);
     cout << "\n Table above " << headers[choice] << " mean" << endl;
     dataPtr->display2dTable(aboveBelow(dataPtr->getDataInt(), m, choice, false), headers, 10);
-    system("pause");
+    cin.get();
     displayTablesMean();
 }
 //display headers for select column
@@ -611,7 +611,7 @@ void Menu::selectLinearCorrel(const vector<int> &column1, const vector<int> &col
             select2Col(dataPtr->getHeader());
             break;
     }
-    system("pause");
+    cin.get();
     selectLinearCorrel(column1, column2, subject1, subject2);
 }
 //report menu
@@ -638,7 +638,7 @@ void Menu::report()
     }else
         cout << " No file is loaded" << endl;
 
-    system("pause");//window
+    cin.get();//window
     //linus
     mainMenu();
 }
@@ -710,7 +710,7 @@ void Menu::selectReport(bool isTxt)
         reportHtml(filename, data);
     }
 
-    system("pause");
+    cin.get();
     report();
 }
 void Menu::computeReport(const vector<bool> &display, vector<string> &getStats, vector<double> &getResult, int sub1, const vector<int> &sub2)
@@ -843,7 +843,7 @@ void Menu::preview()
             title("Table Report");
             cout << " Original Form:" << endl;
             dataPtr->printData();
-            system("pause");
+            cin.get();
             preview();
         case 4:
             report();
@@ -872,7 +872,7 @@ void Menu::sorting(const vector<vector<int>> &data, const vector<string>headers,
     cout << " File name: " << dataPtr->getFilename() << endl;
     //print table
     dataPtr->display2dTable(temp, headers, 10);
-    system("pause");
+    cin.get();
     selectSort(ascDesc);
 }
 
@@ -1356,7 +1356,6 @@ void File::loadFileCsv(string filename)
         {
             loadData(file);
             convertData(data, column);
-            //printData();
         }else
             cout << " Format Error, please check your file" << endl;
     }
