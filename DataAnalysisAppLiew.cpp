@@ -797,7 +797,7 @@ int Menu::getSub()
             cout << ", ";
     }
     cout << ")" << endl;
-    int choice = getChoice(headers.size());
+    int choice = getChoice(headers.size() - 1);
 
     return choice;
 }
@@ -811,10 +811,11 @@ vector<int> Menu::get2Sub()
         cout << i << ". " << headers[i] << endl;
     cout << " Input the first subject number? " << endl;
     int choice;
-    choice = getChoice(headers.size());
+    choice = getChoice(headers.size() - 1);
     result.push_back(choice);
     cout << " Input the second subject number? " << endl;
-    choice = getChoice(headers.size());
+    choice = getChoice(headers.size() - 1);
+
     result.push_back(choice);
 
     return result;
