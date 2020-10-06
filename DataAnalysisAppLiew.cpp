@@ -193,12 +193,11 @@ int Menu::getChoice(int max)
     {
         cout << " From the list above, enter the number(" << min << " - " << max << " and 999): ";
         cin >> choice;
-        if(!cin){
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');//prevent infinite loop
-            choice = max + 1;//give choice a false value to trigger error message
-        }
-    }while(!cin || choice != 999 && (choice < min || choice > max) && printf("\n ERROR Message: You have entered an invalid number. Please try again.\n"));
+
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');//prevent infinite loop
+        //choice = max + 1;//give choice a false value to trigger error message
+    }while(choice != 999 && (choice < min || choice > max) && printf("\n ERROR Message: You have entered an invalid number. Please try again.\n"));
     if(choice == 0){
         if(dataPtr != nullptr){
             delete dataPtr;
@@ -241,12 +240,13 @@ void Menu::loadFile()
     system("cls||clear");
     title("Open File");
     string filename;
-    cin.ignore();
     do
     {
         cout << " Please enter your file name including extension\n (Enter 999 return to main menu).\n ->";
 
-        getline(cin, filename);
+        cin >> filename;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');//prevent infinite loop
 
         if(filename == "999")
             mainMenu();
@@ -325,6 +325,7 @@ void Menu::computeStats()
         cout << " No file is loaded" << endl;
 
     cin.get();
+
     mainMenu();
 }
 //Compute Stats
@@ -770,7 +771,7 @@ vector<bool> Menu::selectDisplay()
         {
             cin >> choice;
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');//prevent infinite loop
             choice = toupper(choice);
         }while(choice != 'Y' && choice != 'N' && printf("\n ERROR Message: You have entered an invalid number. Please try again.\n"));//to check if choice is not Y and not N then loop
         if(choice == 'N'){
@@ -803,15 +804,16 @@ int Menu::getSub()
 //get 2 subs
 vector<int> Menu::get2Sub()
 {
-    cout << "Input two subject numbers" << endl;
+    cout << " Input two subject numbers" << endl;
     vector<string> headers = dataPtr->getHeader();
     vector<int> result;
     for(int i = 1; i < headers.size(); ++i)
         cout << i << ". " << headers[i] << endl;
-    cout << "Input the first subject number? ";
+    cout << " Input the first subject number? " << endl;
     int choice;
     choice = getChoice(headers.size());
     result.push_back(choice);
+    cout << " Input the second subject number? " << endl;
     choice = getChoice(headers.size());
     result.push_back(choice);
 
@@ -1320,7 +1322,9 @@ void reportTxt(string filename, const vector<vector<string>> &data)
     display2dTableReport(txtreport, data, headers, 40);
 
     txtreport.close();
-    cout << "Text Report Generated!" << endl;
+    system("cls||clear");
+    cout << " Text Report Generated!" << endl;
+    cin.get();
 }
 void reportHtml(string filename, const vector<vector<string>> &data)
 {
@@ -1331,7 +1335,9 @@ void reportHtml(string filename, const vector<vector<string>> &data)
     display2dTableReportHtml(txtreport, data, headers);
 
     txtreport.close();
-    cout << "Text Report Generated!" << endl;
+    system("cls||clear");
+    cout << " HTML Report Generated!" << endl;
+    cin.get();
 }
 
 //Load File
